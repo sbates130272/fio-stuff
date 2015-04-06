@@ -21,7 +21,7 @@ group_reporting=1
 filename=${DEVICE}
 iodepth=${IO_DEPTH}
 bs=${BLOCK_SIZE}
-size= ${SIZE}
+size=${SIZE}
 number_ios=${COUNT}
 
 [read]
