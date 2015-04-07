@@ -49,8 +49,9 @@ plotting.
 2. cd into top-level folder (fio-stuff by default).
 3. Check that the defaults in ./latency.sh are to your liking and
 match your system.
-4. sudo ./latency.sh [NB you may not need sudo depending on
-permissions]. 
+4. sudo ./latency.sh -d <device> -i <iodepth> [NB you may not need
+sudo depending on permissions]. Note that device needs to be a block
+device.  
 5. This should create two file called ${DEVICE}_read_lat.1.log and
 ${DEVICE}_write_lat.2.log and a file called latency.png.  
 6. The .log files currently consist of 4 columns as explained in the fio

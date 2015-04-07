@@ -67,7 +67,7 @@ def hist(pnData, nBins=100, bCdf=False):
             pnHist[i] = pnHist[i]/float(pnHist[-1])
     return pnBins,pnHist
 
-def plot(peX, peY, szFile='latency.png', bCdf=False):
+def plot(peX, peY, szString=None, szFile='latency.png', bCdf=False):
     """Use the GnuPlot program to plot the specified input data. For
     now we assume this is latency plot though we may generalize in
     time. Also, for now we dump the data to a temp file rather than
@@ -86,7 +86,11 @@ def plot(peX, peY, szFile='latency.png', bCdf=False):
                             stdout=DEVNULL, stderr=DEVNULL)
     proc.stdin.write('set terminal png medium\n')
     proc.stdin.write('set output \"%s\"\n' % szFile)
-    proc.stdin.write('set title \"Latency Distribution\" font \",20\"\n')
+    if szString:
+        proc.stdin.write('set title \"Latency Distribution : %s\" font \",20\"\n' \
+                             % szString)
+    else:
+        proc.stdin.write('set title \"Latency Distribution\" font \",20\"\n')
     proc.stdin.write('set xlabel \'time (us)\'\n')
     proc.stdin.write('set ylabel \'%s\'\n' % ("CDF" if bCdf else "PDF"))
     proc.stdin.write('set grid\n')
@@ -94,6 +98,12 @@ def plot(peX, peY, szFile='latency.png', bCdf=False):
     proc.stdin.write('quit\n')
     proc.wait()
     os.remove(TMP_FILE)
+
+def mean(peX):
+    """Calculate the mean of a vector. No python2.x version of this
+    built-in."""
+
+    return sum(peX)/float(len(peX)) if len(peX) > 0 else float('nan')
 
 if __name__=="__main__":
     import sys
@@ -116,4 +126,10 @@ if __name__=="__main__":
         data.append(parse(args[i]))
 
     pnBins,pnHist = hist(data[0], options.bins, options.cdf)
-    plot(pnBins, pnHist, options.ofile, options.cdf)
+
+    eMean = mean(data[0])
+    eMin  = min(data[0])
+    eMax  = max(data[0])
+    szString = "count=%d : mean=%.1fus : min=%.1fus : max=%.1fus" % \
+        (len(data[0]),eMean,eMin,eMax)
+    plot(pnBins, pnHist, szString, options.ofile, options.cdf)
