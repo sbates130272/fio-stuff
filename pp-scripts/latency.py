@@ -67,7 +67,7 @@ def hist(pnData, nBins=100, bCdf=False):
             pnHist[i] = pnHist[i]/float(pnHist[-1])
     return pnBins,pnHist
 
-def plot(peX, peY, szString=None, szFile='latency.png', bCdf=False):
+def plotxdf(peX, peY, szString=None, szFile='plotxdf.png', bCdf=False):
     """Use the GnuPlot program to plot the specified input data. For
     now we assume this is latency plot though we may generalize in
     time. Also, for now we dump the data to a temp file rather than
@@ -99,6 +99,41 @@ def plot(peX, peY, szString=None, szFile='latency.png', bCdf=False):
     proc.wait()
     os.remove(TMP_FILE)
 
+def plottime(peX, peY, szString=None, szFile='plottime.png', bCdf=False):
+    """Use the GnuPlot program to plot the specified input data. For
+    now we assume this is latency plot though we may generalize in
+    time. Also, for now we dump the data to a temp file rather than
+    placing it on the gnuplot command line."""
+
+    if peX==None:
+        peX = xrange(len(peY))
+
+    TMP_FILE='plot.data'
+    DEVNULL = open(os.devnull, 'wb')
+
+    tmpFile = open(TMP_FILE,'w')
+    for i in xrange(len(peX)):
+        tmpFile.write("%f\t%f\n" % (peX[i],peY[i]))
+    tmpFile.close()
+
+    proc = subprocess.Popen(['gnuplot','-p'], shell=True,
+                            stdin=subprocess.PIPE,
+                            stdout=DEVNULL, stderr=DEVNULL)
+    proc.stdin.write('set terminal png medium\n')
+    proc.stdin.write('set output \"%s\"\n' % szFile)
+    if szString:
+        proc.stdin.write('set title \"Latency Timeline : %s\" font \",20\"\n' \
+                             % szString)
+    else:
+        proc.stdin.write('set title \"Latency Timeline\" font \",20\"\n')
+    proc.stdin.write('set xlabel \'sample index\'\n')
+    proc.stdin.write('set ylabel \'time (us)\'\n')
+    proc.stdin.write('set grid\n')
+    proc.stdin.write('plot \"%s" with lines\n' % TMP_FILE)
+    proc.stdin.write('quit\n')
+    proc.wait()
+    os.remove(TMP_FILE)
+
 def mean(peX):
     """Calculate the mean of a vector. No python2.x version of this
     built-in."""
@@ -111,7 +146,7 @@ if __name__=="__main__":
 
     parser = optparse.OptionParser()
     parser.add_option("-f", "--ofile", action="store", type=str,
-                      default="latency.png", help="name of output file")
+                      default="latency", help="basename for output files")
     parser.add_option("-b", "--bins", action="store", type=int,
                       default=100, help="number of histogram bins")
     parser.add_option("-s", "--skip", action="store", type=int,
@@ -128,7 +163,7 @@ if __name__=="__main__":
         data.append(parse(args[i]))
 
     if options.skip:
-        data[0] = data[0][options.skip:-1]
+        data[0] = data[0][options.skip:]
 
     pnBins,pnHist = hist(data[0], options.bins, options.cdf)
 
@@ -137,4 +172,6 @@ if __name__=="__main__":
     eMax  = max(data[0])
     szString = "count=%d : mean=%.1fus : min=%.1fus : max=%.1fus" % \
         (len(data[0]),eMean,eMin,eMax)
-    plot(pnBins, pnHist, szString, options.ofile, options.cdf)
+    plottime(None, data[0], szString, options.ofile+".time.png")
+    plotxdf(pnBins, pnHist, szString, options.ofile+".cdf.png", options.cdf)
+
