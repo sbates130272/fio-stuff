@@ -63,6 +63,8 @@ def hist(pnData, nBins=100, bCdf=False):
     if bCdf:
         for i in xrange(1,nBins):
             pnHist[i] = pnHist[i]+pnHist[i-1]
+        for i in xrange(nBins):
+            pnHist[i] = pnHist[i]/float(pnHist[-1])
     return pnBins,pnHist
 
 def plot(peX, peY, szFile='latency.png', bCdf=False):
@@ -76,7 +78,7 @@ def plot(peX, peY, szFile='latency.png', bCdf=False):
 
     tmpFile = open(TMP_FILE,'w')
     for i in xrange(len(peX)):
-        tmpFile.write("%f\t%d\n" % (peX[i],peY[i]))
+        tmpFile.write("%f\t%f\n" % (peX[i],peY[i]))
     tmpFile.close()
 
     proc = subprocess.Popen(['gnuplot','-p'], shell=True,
