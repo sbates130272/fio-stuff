@@ -51,14 +51,15 @@ plotting.
 match your system.
 4. sudo ./latency.sh -d <device> -i <iodepth> [NB you may not need
 sudo depending on permissions]. Note that device needs to be a block
-device.  
+device. Add a -w for write latency plots, the default is for read
+latency plots.  
 5. This should create two file called ${DEVICE}_read_lat.1.log and
 ${DEVICE}_write_lat.2.log and two file called latency.time.png and
 latency.cdf.png. 
 6. The .log files currently consist of 4 columns as explained in the fio
 HOWTO. These are time, latency (us), direction (0=read), size (B).
 7. latency.time.png is a time series plot of the measured
-latency. latency.cdf.png is a plot of the CDF of the read
+latency. latency.cdf.png is a plot of the CDF of the measured
 latency. Both files can be viewed using any reasonable image viewer.
 
 ## Updates
