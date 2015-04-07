@@ -30,14 +30,17 @@ IO_DEPTH=1
 BLOCK_SIZE=512
 COUNT=11024
 LAT_LOG=$(basename ${DEVICE})
+READ_WRITE="read"
 
   # Parameters for post-processing
 BINS=100
 SKIP=1024
 
   # Accept some key parameter changes from the command line.
-while getopts "d:i:" opt; do
+while getopts "wd:i:" opt; do
     case "$opt" in
+	w)  READ_WRITE="write"
+            ;;
 	d)  DEVICE=${OPTARG}
             ;;
 	i)  IO_DEPTH=${OPTARG}
@@ -55,6 +58,8 @@ done
 
 function cleanup { 
     rm *_slat.*.log *_clat.*.log > /dev/null
+    mv ${LAT_LOG}_read_lat.1.log ${LAT_LOG}_read_lat.log
+    mv ${LAT_LOG}_write_lat.2.log ${LAT_LOG}_write_lat.log
 }
 
 echo ${DEVICE} ${IO_DEPTH}
@@ -67,4 +72,4 @@ fi
 DEVICE=${DEVICE} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} \
     LAT_LOG=${LAT_LOG} fio ./fio-scripts/latency.fio
 cleanup
-./pp-scripts/latency.py -s ${SKIP} -b ${BINS} -c ${LAT_LOG}_read_lat.1.log
+./pp-scripts/latency.py -s ${SKIP} -b ${BINS} -c ${LAT_LOG}_${READ_WRITE}_lat.log
