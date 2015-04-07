@@ -114,6 +114,8 @@ if __name__=="__main__":
                       default="latency.png", help="name of output file")
     parser.add_option("-b", "--bins", action="store", type=int,
                       default=100, help="number of histogram bins")
+    parser.add_option("-s", "--skip", action="store", type=int,
+                      default=0, help="skip this number of data-points")
     parser.add_option("-c", "--cdf", action="store_true",
                       help="generate CDF rather than PDF")
     options, args = parser.parse_args()
@@ -124,6 +126,9 @@ if __name__=="__main__":
     data = []
     for i in range(len(args)):
         data.append(parse(args[i]))
+
+    if options.skip:
+        data[0] = data[0][options.skip:-1]
 
     pnBins,pnHist = hist(data[0], options.bins, options.cdf)
 

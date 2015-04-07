@@ -28,11 +28,12 @@ DEVICE=/dev/nvme0n1
 SIZE=1G
 IO_DEPTH=1
 BLOCK_SIZE=512
-COUNT=10k
+COUNT=11024
 LAT_LOG=$(basename ${DEVICE})
 
   # Parameters for post-processing
 BINS=100
+SKIP=1024
 
   # Accept some key parameter changes from the command line.
 while getopts "d:i:" opt; do
@@ -66,4 +67,4 @@ fi
 DEVICE=${DEVICE} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} \
     LAT_LOG=${LAT_LOG} fio ./fio-scripts/latency.fio
 cleanup
-./pp-scripts/latency.py -b ${BINS} -c ${LAT_LOG}_read_lat.1.log
+./pp-scripts/latency.py -s ${SKIP} -b ${BINS} -c ${LAT_LOG}_read_lat.1.log
