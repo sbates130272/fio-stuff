@@ -72,15 +72,16 @@ def plot(peX, peY, szFile='latency.png', bCdf=False):
     placing it on the gnuplot command line."""
 
     TMP_FILE='plot.data'
+    DEVNULL = open(os.devnull, 'wb')
 
     tmpFile = open(TMP_FILE,'w')
     for i in xrange(len(peX)):
         tmpFile.write("%f\t%d\n" % (peX[i],peY[i]))
     tmpFile.close()
 
-    proc = subprocess.Popen(['gnuplot','-p'], 
-                            shell=True,
-                            stdin=subprocess.PIPE)
+    proc = subprocess.Popen(['gnuplot','-p'], shell=True,
+                            stdin=subprocess.PIPE,
+                            stdout=DEVNULL, stderr=DEVNULL)
     proc.stdin.write('set terminal png medium\n')
     proc.stdin.write('set output \"%s\"\n' % szFile)
     proc.stdin.write('set title \"Latency Distribution\" font \",20\"\n')

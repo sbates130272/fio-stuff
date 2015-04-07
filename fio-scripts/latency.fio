@@ -24,7 +24,7 @@
 [global]
 rw=randrw
 random_generator=lfsr
-direct=1
+direct=0
 ioengine=libaio
 refill_buffers=1
 norandommap=1
