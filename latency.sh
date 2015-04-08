@@ -25,6 +25,7 @@
 
   # Parameters for running FIO
 DEVICE=/dev/nvme0n1
+NUM_JOBS=1
 SIZE=1G
 IO_DEPTH=1
 BLOCK_SIZE=512
@@ -37,9 +38,11 @@ BINS=100
 SKIP=1024
 
   # Accept some key parameter changes from the command line.
-while getopts "wd:i:" opt; do
+while getopts "wn:d:i:" opt; do
     case "$opt" in
 	w)  READ_WRITE="write"
+            ;;
+	n)  NUM_JOBS=${OPTARG}
             ;;
 	d)  DEVICE=${OPTARG}
             ;;
@@ -62,14 +65,12 @@ function cleanup {
     mv ${LAT_LOG}_write_lat.2.log ${LAT_LOG}_write_lat.log
 }
 
-echo ${DEVICE} ${IO_DEPTH}
-
 if [ ! -b "$DEVICE" ]; then
      echo "latency.sh: You must specify a block IO device"
      exit 1
 fi
 
-DEVICE=${DEVICE} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} \
+DEVICE=${DEVICE} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} \
     LAT_LOG=${LAT_LOG} fio ./fio-scripts/latency.fio
 cleanup
 ./pp-scripts/latency.py -s ${SKIP} -b ${BINS} -c ${LAT_LOG}_${READ_WRITE}_lat.log
