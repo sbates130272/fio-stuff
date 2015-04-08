@@ -21,7 +21,7 @@
 ##
 ########################################################################
 
-[global]
+[latency]
 rw=randrw
 random_generator=lfsr
 direct=1
@@ -34,12 +34,5 @@ numjobs=${NUM_JOBS}
 bs=${BLOCK_SIZE}
 size=${SIZE}
 number_ios=${COUNT}
-
-[read]
-write_lat_log=${LAT_LOG}_read
-rwmixread=100
-
-[write]
-stonewall
-write_lat_log=${LAT_LOG}_write
-rwmixread=0
+write_lat_log=${LAT_LOG}
+rwmixread=${RW_MIX_READ}
