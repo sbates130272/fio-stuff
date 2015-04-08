@@ -60,7 +60,7 @@ while getopts "wn:d:i:" opt; do
 done
 
 function cleanup { 
-    rm *_slat.*.log *_clat.*.log > /dev/null
+    rm -f *_slat.*.log *_clat.*.log > /dev/null
     mv ${LAT_LOG}_lat.1.log ${LAT_LOG}.log
 }
 
