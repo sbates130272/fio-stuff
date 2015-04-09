@@ -49,10 +49,10 @@ plotting.
 2. cd into top-level folder (fio-stuff by default).
 3. Check that the defaults in ./latency.sh are to your liking and
 match your system.
-4. sudo ./latency.sh -d <device> -i <iodepth> [NB you may not need
-sudo depending on permissions]. Note that device needs to be a block
-device. Add a -w for write latency plots, the default is for read
-latency plots.  
+4. sudo ./latency.sh -d <device> -i <iodepth> -r <rwmixread> [NB you
+may not need sudo depending on permissions]. Note that device needs to
+be a block device. Use -r 0 for write latency plots, the default is
+for read latency plots (-r 100).  
 5. This should create two file called ${DEVICE}_read_lat.1.log and
 ${DEVICE}_write_lat.2.log and two file called latency.time.png and
 latency.cdf.png. 

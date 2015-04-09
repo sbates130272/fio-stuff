@@ -38,9 +38,9 @@ BINS=100
 SKIP=1024
 
   # Accept some key parameter changes from the command line.
-while getopts "wn:d:i:" opt; do
+while getopts "r:n:d:i:" opt; do
     case "$opt" in
-	w)  RW_MIX_READ=0
+	r)  RW_MIX_READ=${OPTARG}
             ;;
 	n)  NUM_JOBS=${OPTARG}
             ;;
