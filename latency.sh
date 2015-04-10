@@ -23,19 +23,20 @@
 ##
 ########################################################################
 
+  # Parameters for post-processing
+BINS=100
+SKIP=10000
+CROP=1000
+
   # Parameters for running FIO
 DEVICE=/dev/nvme0n1
 NUM_JOBS=1
 SIZE=1G
 IO_DEPTH=1
 BLOCK_SIZE=512
-COUNT=11024
+COUNT=$((100000 + ${SKIP} + ${CROP}))
 LAT_LOG=$(basename ${DEVICE})
 RW_MIX_READ=100
-
-  # Parameters for post-processing
-BINS=100
-SKIP=1024
 
   # Accept some key parameter changes from the command line.
 while getopts "r:n:d:i:" opt; do
@@ -69,8 +70,9 @@ if [ ! -b "$DEVICE" ]; then
      exit 1
 fi
 
+rm *.log
 DEVICE=${DEVICE} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
     LAT_LOG=${LAT_LOG} fio ./fio-scripts/latency.fio
 cleanup
-./pp-scripts/latency.py -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
+./pp-scripts/latency.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log

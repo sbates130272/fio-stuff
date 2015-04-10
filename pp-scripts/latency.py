@@ -150,7 +150,9 @@ if __name__=="__main__":
     parser.add_option("-b", "--bins", action="store", type=int,
                       default=100, help="number of histogram bins")
     parser.add_option("-s", "--skip", action="store", type=int,
-                      default=0, help="skip this number of data-points")
+                      default=0, help="skip this number of data-points (start)")
+    parser.add_option("-k", "--crop", action="store", type=int,
+                      default=0, help="skip this number of data-points (end)")
     parser.add_option("-c", "--cdf", action="store_true",
                       help="generate CDF rather than PDF")
     options, args = parser.parse_args()
@@ -164,6 +166,8 @@ if __name__=="__main__":
 
     if options.skip:
         data[0] = data[0][options.skip:]
+    if options.crop:
+        data[0] = data[0][0:-options.crop]
 
     pnBins,pnHist = hist(data[0], options.bins, options.cdf)
 
