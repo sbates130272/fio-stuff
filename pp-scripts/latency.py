@@ -164,6 +164,9 @@ if __name__=="__main__":
     for i in range(len(args)):
         data.append(parse(args[i]))
 
+    if len(data[0])<(options.skip+options.crop):
+        raise ValueError('latency.py skip and crop add to more than input data size')
+
     if options.skip:
         data[0] = data[0][options.skip:]
     if options.crop:

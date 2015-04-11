@@ -38,7 +38,7 @@ COUNT=$((100000 + ${SKIP} + ${CROP}))
 RW_MIX_READ=100
 
   # Accept some key parameter changes from the command line.
-while getopts "r:n:f:i:" opt; do
+while getopts "r:n:f:i:s:" opt; do
     case "$opt" in
 	r)  RW_MIX_READ=${OPTARG}
             ;;
@@ -47,6 +47,8 @@ while getopts "r:n:f:i:" opt; do
 	f)  FILENAME=${OPTARG}
             ;;
 	i)  IO_DEPTH=${OPTARG}
+            ;;
+	s)  SIZE=${OPTARG}
             ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -69,10 +71,21 @@ if [ ! -e "$FILENAME" ]; then
      echo "latency.sh: You must specify an existing file or block IO device"
      exit 1
 fi
+if [ ! -b "$FILENAME" ]; then
+    if [ ! -f "$FILENAME" ]; then
+	echo "latency.sh: Only block devices or regular files are permitted"
+	exit 1
+    fi
+    if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
+	echo "latency.sh: Do not have read and write access to the target file"
+	exit 1
+    fi
+fi
 
 rm *.log
 FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
     LAT_LOG=${LAT_LOG} fio ./fio-scripts/latency.fio
 cleanup
+echo ./pp-scripts/latency.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
 ./pp-scripts/latency.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log

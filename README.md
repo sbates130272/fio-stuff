@@ -22,9 +22,9 @@ binaries for it or you can grab the source and install it yourself
 from https://github.com/axboe/fio. 
 
 To run the post-processing scripts you will need python and gnuplot. I
-have tested using python 2.6.6 and gnuplot 4.2 but the code is
-generic enought that other versions should work. Send pull requests if
-you see issues.
+have tested using fio 2.2.6, python 2.6.6 and gnuplot 4.2 but the code
+is generic enought that other versions should work. Send pull requests
+if you see issues.
 
 ## Directory Structure
 
@@ -49,11 +49,11 @@ plotting.
 2. cd into top-level folder (fio-stuff by default).
 3. Check that the defaults in ./latency.sh are to your liking and
 match your system.
-4. sudo ./latency.sh -f <filename> -i <iodepth> -r <rwmixread> [NB you
-may not need sudo depending on permissions]. Note that device needs to
-be a block device. Use -r 0 for write latency plots, the default is
-for read latency plots (-r 100). Note that filename can either be a
-block IO node or an existing regular file.
+4. sudo ./latency.sh -f <filename> -i <iodepth> -r <rwmixread> -s
+<size> [NB you may not need sudo depending on permissions]. Note that
+device needs to be a block device or regular file with rw
+permissions. Use -r 0 for write latency plots, the default is for read
+latency plots (-r 100). 
 5. This should create two file called ${FILENAME}_read_lat.1.log and
 ${FILENAME}_write_lat.2.log and two file called latency.time.png and
 latency.cdf.png. 
