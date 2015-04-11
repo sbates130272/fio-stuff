@@ -87,5 +87,4 @@ FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
     LAT_LOG=${LAT_LOG} fio ./fio-scripts/latency.fio
 cleanup
-echo ./pp-scripts/latency.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
 ./pp-scripts/latency.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
