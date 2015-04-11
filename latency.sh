@@ -26,7 +26,7 @@
   # Parameters for post-processing
 BINS=100
 SKIP=10000
-CROP=1000
+CROP=10000
 
   # Parameters for running FIO
 FILENAME=/dev/nvme0n1
@@ -35,7 +35,6 @@ SIZE=1G
 IO_DEPTH=1
 BLOCK_SIZE=512
 COUNT=$((100000 + ${SKIP} + ${CROP}))
-LAT_LOG=$(basename ${FILENAME})
 RW_MIX_READ=100
 
   # Accept some key parameter changes from the command line.
@@ -59,14 +58,15 @@ while getopts "r:n:f:i:" opt; do
 	    ;;
     esac
 done
+LAT_LOG=$(basename ${FILENAME})
 
 function cleanup { 
     rm -f *_slat.*.log *_clat.*.log > /dev/null
     mv ${LAT_LOG}_lat.1.log ${LAT_LOG}.log
 }
 
-if [ ! -b "$FILENAME" ]; then
-     echo "latency.sh: You must specify a block IO device"
+if [ ! -e "$FILENAME" ]; then
+     echo "latency.sh: You must specify an existing file or block IO device"
      exit 1
 fi
 

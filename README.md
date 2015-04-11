@@ -52,7 +52,8 @@ match your system.
 4. sudo ./latency.sh -f <filename> -i <iodepth> -r <rwmixread> [NB you
 may not need sudo depending on permissions]. Note that device needs to
 be a block device. Use -r 0 for write latency plots, the default is
-for read latency plots (-r 100).  
+for read latency plots (-r 100). Note that filename can either be a
+block IO node or an existing regular file.
 5. This should create two file called ${FILENAME}_read_lat.1.log and
 ${FILENAME}_write_lat.2.log and two file called latency.time.png and
 latency.cdf.png. 
