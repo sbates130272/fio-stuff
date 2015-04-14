@@ -30,6 +30,7 @@ CROP=10000
 
   # Parameters for running FIO
 FILENAME=/dev/nvme0n1
+IOENGINE=libaio
 NUM_JOBS=1
 SIZE=1G
 IO_DEPTH=1
@@ -38,7 +39,7 @@ COUNT=$((100000 + ${SKIP} + ${CROP}))
 RW_MIX_READ=100
 
   # Accept some key parameter changes from the command line.
-while getopts "r:n:f:i:s:" opt; do
+while getopts "r:n:f:i:s:e:" opt; do
     case "$opt" in
 	r)  RW_MIX_READ=${OPTARG}
             ;;
@@ -49,6 +50,8 @@ while getopts "r:n:f:i:s:" opt; do
 	i)  IO_DEPTH=${OPTARG}
             ;;
 	s)  SIZE=${OPTARG}
+            ;;
+	e)  IOENGINE=${OPTARG}
             ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -85,6 +88,6 @@ fi
 rm *.log
 FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
-    LAT_LOG=${LAT_LOG} fio ./fio-scripts/latency.fio
+    LAT_LOG=${LAT_LOG} IOENGINE=${IOENGINE} fio ./fio-scripts/latency.fio
 cleanup
 ./pp-scripts/latency.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log

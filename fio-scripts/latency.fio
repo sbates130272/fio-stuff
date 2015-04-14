@@ -25,10 +25,10 @@
 rw=randrw
 random_generator=lfsr
 direct=1
-ioengine=libaio
 runtime=10
 group_reporting=1
 filename=${FILENAME}
+ioengine=${IOENGINE}
 iodepth=${IO_DEPTH}
 numjobs=${NUM_JOBS}
 bs=${BLOCK_SIZE}
