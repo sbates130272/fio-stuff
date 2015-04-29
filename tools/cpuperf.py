@@ -10,7 +10,7 @@ import time
 def get_perfdata(options):
     try:
         data = sp.check_output(["ps", "-C", options.command, "-o" "%cpu=,%mem="])
-        data = tuple(float(x) for x in data.split())
+        data = tuple(float(x) for x in data.split()[0:2])
     except sp.CalledProcessError:
         if (options.skip):
             data=None

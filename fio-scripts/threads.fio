@@ -1,0 +1,59 @@
+########################################################################
+##
+## Copyright 2015 PMC-Sierra, Inc.
+##
+## Licensed under the Apache License, Version 2.0 (the "License"); you
+## may not use this file except in compliance with the License. You may
+## obtain a copy of the License at
+## http:##www.apache.org#licenses#LICENSE-2.0 Unless required by
+## applicable law or agreed to in writing, software distributed under the
+## License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+## CONDITIONS OF ANY KIND, either express or implied. See the License for
+## the specific language governing permissions and limitations under the
+## License.
+##
+########################################################################
+
+########################################################################
+##
+##   Description:
+##     A simple fio script to IOPS at increasing thread depth. Useful
+##     for CPU utilization.
+##
+########################################################################
+
+[global]
+rw=randrw
+random_generator=lfsr
+direct=0
+runtime=10
+group_reporting=1
+filename=${FILENAME}
+ioengine=${IOENGINE}
+iodepth=${IO_DEPTH}
+bs=${BLOCK_SIZE}
+size=${SIZE}
+rwmixread=${RW_MIX_READ}
+
+[threads_1]
+numjobs=1
+
+[threads_2]
+stonewall
+numjobs=2
+
+[threads_4]
+stonewall
+numjobs=4
+
+[threads_8]
+stonewall
+numjobs=8
+
+[threads_16]
+stonewall
+numjobs=16
+
+[threads_32]
+stonewall
+numjobs=32
