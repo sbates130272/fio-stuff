@@ -65,7 +65,7 @@ while getopts "r:n:f:i:s:e:" opt; do
 done
 LAT_LOG=$(basename ${FILENAME})
 
-function cleanup { 
+function cleanup {
     rm -f *_slat.*.log *_clat.*.log > /dev/null
     mv ${LAT_LOG}_lat.1.log ${LAT_LOG}.log
 }
@@ -90,4 +90,4 @@ FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
     LAT_LOG=${LAT_LOG} IOENGINE=${IOENGINE} fio ./fio-scripts/latency.fio
 cleanup
-./pp-scripts/latency.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
+./pp-scripts/pprocess.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log

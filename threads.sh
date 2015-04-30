@@ -56,6 +56,13 @@ while getopts "r:n:f:i:s:e:" opt; do
     esac
 done
 
+function cleanup {
+    rm *.tmp
+    grep -i jobs\= threads.log | awk '{print $3}' | sed s/[^0-9.]//g > jobs.tmp
+    grep -i cpu threads.log | awk '{print $3}' | sed s/[^0-9.]//g > cpu.tmp
+    rm *.tmp
+}
+
 if [ ! -e "$FILENAME" ]; then
      echo "threads.sh: You must specify an existing file or block IO device"
      exit 1
@@ -74,6 +81,8 @@ fi
 ./tools/cpuperf.py -C fio -s > threads.cpu.log &
 CPUPERF_PID=$! ; trap 'kill -9 $CPUPERF_PID' EXIT
 
-FILENAME=${FILENAME} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} \
-    BLOCK_SIZE=${BLOCK_SIZE} RW_MIX_READ=${RW_MIX_READ} \
-    IOENGINE=${IOENGINE} fio ./fio-scripts/threads.fio | tee threads.log
+#FILENAME=${FILENAME} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} \
+#    BLOCK_SIZE=${BLOCK_SIZE} RW_MIX_READ=${RW_MIX_READ} \
+#    IOENGINE=${IOENGINE} stdbuf -oL -eL fio ./fio-scripts/threads.fio | tee threads.log
+./pp-scripts/pprocess.py -m threads -c threads.log
+

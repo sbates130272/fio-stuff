@@ -53,7 +53,7 @@ def hist(pnData, nBins=100, bCdf=False):
     step  = (end-start)/float(nBins)
 
     pnBins = [start+(x*step) for x in range(nBins)]
-    
+
     pnHist =nBins*[0]
     for x in pnData:
         for i in xrange(nBins-1):
@@ -140,32 +140,17 @@ def mean(peX):
 
     return sum(peX)/float(len(peX)) if len(peX) > 0 else float('nan')
 
-if __name__=="__main__":
-    import sys
-    import optparse
+def latency(options, args):
 
-    parser = optparse.OptionParser()
-    parser.add_option("-f", "--ofile", action="store", type=str,
-                      default="latency", help="basename for output files")
-    parser.add_option("-b", "--bins", action="store", type=int,
-                      default=100, help="number of histogram bins")
-    parser.add_option("-s", "--skip", action="store", type=int,
-                      default=0, help="skip this number of data-points (start)")
-    parser.add_option("-k", "--crop", action="store", type=int,
-                      default=0, help="skip this number of data-points (end)")
-    parser.add_option("-c", "--cdf", action="store_true",
-                      help="generate CDF rather than PDF")
-    options, args = parser.parse_args()
-    
     if len(args)>1:
-        raise ValueError('latency.py only accepts one input file (for now)')
+        raise ValueError('pprocess.py only accepts one input file (for now)')
 
     data = []
     for i in range(len(args)):
         data.append(parse(args[i]))
 
     if len(data[0])<(options.skip+options.crop):
-        raise ValueError('latency.py skip and crop add to more than input data size')
+        raise ValueError('pprocess.py skip and crop add to more than input data size')
 
     if options.skip:
         data[0] = data[0][options.skip:]
@@ -182,3 +167,29 @@ if __name__=="__main__":
     plottime(None, data[0], szString, options.ofile+".time.png")
     plotxdf(pnBins, pnHist, szString, options.ofile+".cdf.png", options.cdf)
 
+
+if __name__=="__main__":
+    import sys
+    import optparse
+
+    parser = optparse.OptionParser()
+    parser.add_option("-m", "--mode", action="store", type=str,
+                      default="latency", help="post processing mode")
+    parser.add_option("-f", "--ofile", action="store", type=str,
+                      default="latency", help="basename for output files")
+    parser.add_option("-b", "--bins", action="store", type=int,
+                      default=100, help="number of histogram bins")
+    parser.add_option("-s", "--skip", action="store", type=int,
+                      default=0, help="skip this number of data-points (start)")
+    parser.add_option("-k", "--crop", action="store", type=int,
+                      default=0, help="skip this number of data-points (end)")
+    parser.add_option("-c", "--cdf", action="store_true",
+                      help="generate CDF rather than PDF")
+    options, args = parser.parse_args()
+
+    if options.mode=="latency":
+        latency(options, args)
+    elif options.mode=="threads":
+        threads(options, args)
+    else:
+        raise ValueError('invalid option for mode (%s)' % options.mode)
