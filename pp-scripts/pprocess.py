@@ -25,8 +25,9 @@
 
 import os
 import subprocess
+import re
 
-def parse(szFile):
+def parse_lat(szFile):
     """Read in a latency FIO file which has the four column format time,
     latency (us), direction (0=read), size (B). Fill a 2D array with
     the latency data and return that vector"""
@@ -38,6 +39,31 @@ def parse(szFile):
         if line[0]=="#":
             continue
         ret.append(map(int, line.strip().split(','))[1])
+
+    return ret
+
+def parse_thr(szFile):
+    """Read in a standard FIO console log and pull out the data needed
+    for thread analysis."""
+
+    threads = []
+    cpu     = []
+    fFile = open(szFile,'r')
+    for line in fFile:
+        if line[0]=="#":
+            continue
+        if re.match("^cpu", line.strip()):
+            cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
+        if "jobs=" in line:
+            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
+
+    ret = []
+    i=0
+    for thread in threads:
+        ret.append([thread, cpu[i][0]*thread])
+        i=i+1
+
+    print ret
 
     return ret
 
@@ -142,12 +168,9 @@ def mean(peX):
 
 def latency(options, args):
 
-    if len(args)>1:
-        raise ValueError('pprocess.py only accepts one input file (for now)')
-
     data = []
     for i in range(len(args)):
-        data.append(parse(args[i]))
+        data.append(parse_lat(args[i]))
 
     if len(data[0])<(options.skip+options.crop):
         raise ValueError('pprocess.py skip and crop add to more than input data size')
@@ -167,6 +190,10 @@ def latency(options, args):
     plottime(None, data[0], szString, options.ofile+".time.png")
     plotxdf(pnBins, pnHist, szString, options.ofile+".cdf.png", options.cdf)
 
+def threads(options, args):
+
+    data = parse_thr(args[0])
+    return 0
 
 if __name__=="__main__":
     import sys
@@ -186,6 +213,9 @@ if __name__=="__main__":
     parser.add_option("-c", "--cdf", action="store_true",
                       help="generate CDF rather than PDF")
     options, args = parser.parse_args()
+
+    if len(args)>1:
+        raise ValueError('pprocess.py only accepts one input file (for now)')
 
     if options.mode=="latency":
         latency(options, args)
