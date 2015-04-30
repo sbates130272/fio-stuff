@@ -57,15 +57,12 @@ def parse_thr(szFile):
         if "jobs=" in line:
             threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
 
-    ret = []
-    i=0
+    cpu2 = []; i=0
     for thread in threads:
-        ret.append([thread, cpu[i][0]*thread])
+        cpu2.append(cpu[i][0]*thread)
         i=i+1
 
-    print ret
-
-    return ret
+    return threads,cpu2
 
 def hist(pnData, nBins=100, bCdf=False):
     """A simple histogram binning function. We could use something
@@ -192,8 +189,9 @@ def latency(options, args):
 
 def threads(options, args):
 
-    data = parse_thr(args[0])
-    return 0
+    x,y = parse_thr(args[0])
+    print x,y
+    plottime(x, y, szString=None, szFile='threads.png')
 
 if __name__=="__main__":
     import sys
