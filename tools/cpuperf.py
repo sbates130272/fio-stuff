@@ -10,7 +10,11 @@ import time
 def get_perfdata(options):
     try:
         data = sp.check_output(["ps", "-C", options.command, "-o" "%cpu=,%mem="])
-        data = tuple(float(x) for x in data.split()[0:2])
+        if options.multithread:
+            temp = tuple(float(x) for x in data.split())
+            data = (sum(temp[::2]), sum(temp[1::2]))
+        else:
+            data = tuple(float(x) for x in data.split()[0:2])
     except sp.CalledProcessError:
         if (options.skip):
             data=None
@@ -32,6 +36,8 @@ if __name__=="__main__":
                       help="Wait time in ms between calls to ps.", default=100)
     parser.add_option("-s", "--skip", action="store_true",
                       help="Only output data when command is running.")
+    parser.add_option("-m", "--multithread", action="store_true",
+                      help="Treat the process as a multi-threaded one when calling ps.")
     (options, args) = parser.parse_args()
 
     try:

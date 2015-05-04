@@ -71,7 +71,7 @@ if [ ! -b "$FILENAME" ]; then
     fi
 fi
 
-./tools/cpuperf.py -C fio -s > threads.cpu.log &
+./tools/cpuperf.py -C fio -s -m > threads.cpu.log &
 CPUPERF_PID=$! ; trap 'kill -9 $CPUPERF_PID' EXIT
 
 FILENAME=${FILENAME} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} \

@@ -19,7 +19,7 @@
 ##
 ##   Description:
 ##     A simple python script that uses gnuplot to generate a SVF plot
-##     file based on inputted latency data file(s).
+##     file based on inputted data file(s).
 ##
 ########################################################################
 
@@ -59,7 +59,7 @@ def parse_thr(szFile):
 
     cpu2 = []; i=0
     for thread in threads:
-        cpu2.append(cpu[i][0]*thread)
+        cpu2.append((cpu[i][0]+cpu[i][1])*thread)
         i=i+1
 
     return threads,cpu2
@@ -90,7 +90,7 @@ def hist(pnData, nBins=100, bCdf=False):
             pnHist[i] = pnHist[i]/float(pnHist[-1])
     return pnBins,pnHist
 
-def plotxdf(peX, peY, szString=None, szFile='plotxdf.png', bCdf=False):
+def plotxdf(peX, peY, dtLabels=None, szFile='plotxdf.png', bCdf=False):
     """Use the GnuPlot program to plot the specified input data. For
     now we assume this is latency plot though we may generalize in
     time. Also, for now we dump the data to a temp file rather than
@@ -109,9 +109,9 @@ def plotxdf(peX, peY, szString=None, szFile='plotxdf.png', bCdf=False):
                             stdout=DEVNULL, stderr=DEVNULL)
     proc.stdin.write('set terminal png medium\n')
     proc.stdin.write('set output \"%s\"\n' % szFile)
-    if szString:
+    if dtLabels['title']:
         proc.stdin.write('set title \"Latency Distribution : %s\" font \",20\"\n' \
-                             % szString)
+                             % dtLabels['title'])
     else:
         proc.stdin.write('set title \"Latency Distribution\" font \",20\"\n')
     proc.stdin.write('set xlabel \'time (us)\'\n')
@@ -122,7 +122,7 @@ def plotxdf(peX, peY, szString=None, szFile='plotxdf.png', bCdf=False):
     proc.wait()
     os.remove(TMP_FILE)
 
-def plottime(peX, peY, szString=None, szFile='plottime.png', bCdf=False):
+def plotxy(peX, peY, dtLabels=None, szFile='plotxy.png'):
     """Use the GnuPlot program to plot the specified input data. For
     now we assume this is latency plot though we may generalize in
     time. Also, for now we dump the data to a temp file rather than
@@ -144,13 +144,16 @@ def plottime(peX, peY, szString=None, szFile='plottime.png', bCdf=False):
                             stdout=DEVNULL, stderr=DEVNULL)
     proc.stdin.write('set terminal png medium\n')
     proc.stdin.write('set output \"%s\"\n' % szFile)
-    if szString:
-        proc.stdin.write('set title \"Latency Timeline : %s\" font \",20\"\n' \
-                             % szString)
-    else:
-        proc.stdin.write('set title \"Latency Timeline\" font \",20\"\n')
-    proc.stdin.write('set xlabel \'sample index\'\n')
-    proc.stdin.write('set ylabel \'time (us)\'\n')
+    try:
+        if dtLabels['title']:
+            proc.stdin.write('set title \"%s\" font \",20\"\n' \
+                                 % dtLabels['title'])
+        if dtLabels['xlabel']:
+            proc.stdin.write('set xlabel \'%s\'\n' % dtLabels['xlabel'])
+        if dtLabels['ylabel']:
+            proc.stdin.write('set ylabel \'%s\'\n' % dtLabels['ylabel'])
+    except:
+        pass
     proc.stdin.write('set grid\n')
     proc.stdin.write('plot \"%s" with lines\n' % TMP_FILE)
     proc.stdin.write('quit\n')
@@ -182,16 +185,22 @@ def latency(options, args):
     eMean = mean(data[0])
     eMin  = min(data[0])
     eMax  = max(data[0])
-    szString = "count=%d : mean=%.1fus : min=%.1fus : max=%.1fus" % \
+    dtLabels = {}
+    dtLabels['title'] = "Latency : count=%d : mean=%.1fus : min=%.1fus : max=%.1fus" % \
         (len(data[0]),eMean,eMin,eMax)
-    plottime(None, data[0], szString, options.ofile+".time.png")
-    plotxdf(pnBins, pnHist, szString, options.ofile+".cdf.png", options.cdf)
+    dtLabels['xlabel'] = "sample index"
+    dtLabels['ylabel'] = "time (us)"
+    plotxy(None, data[0], dtLabels, options.ofile+".time.png")
+    plotxdf(pnBins, pnHist, dtLabels, options.ofile+".cdf.png", options.cdf)
 
 def threads(options, args):
 
     x,y = parse_thr(args[0])
-    print x,y
-    plottime(x, y, szString=None, szFile='threads.png')
+    dtLabels=dict()
+    dtLabels['title']  = "Threads vs CPU Utilization"
+    dtLabels['xlabel'] = "FIO threads"
+    dtLabels['ylabel'] = "CPU Utilization (%)"
+    plotxy(x, y, dtLabels, szFile='threads.png')
 
 if __name__=="__main__":
     import sys

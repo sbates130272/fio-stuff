@@ -19,7 +19,7 @@ License.
 
 Make sure you have fio on your path somewhere. Most distros have
 binaries for it or you can grab the source and install it yourself
-from https://github.com/axboe/fio. 
+from https://github.com/axboe/fio.
 
 To run the post-processing scripts you will need python and gnuplot. I
 have tested using fio 2.2.6, python 2.6.6 and gnuplot 4.2 but the code
@@ -43,7 +43,11 @@ A range of post-processing scripts that either parse fio output or
 things like the latency files to generate interesting datasets for
 plotting.
 
-## Quick Start (Latency)
+### tools
+
+A variety of tools we use to assist in one or more of the tests.
+
+## Quick Start (latency.sh)
 
 1. Ensure fio, python and gunplot are installed and on your path.
 2. cd into top-level folder (fio-stuff by default).
@@ -53,15 +57,31 @@ match your system.
 <size> [NB you may not need sudo depending on permissions]. Note that
 device needs to be a block device or regular file with rw
 permissions. Use -r 0 for write latency plots, the default is for read
-latency plots (-r 100). 
+latency plots (-r 100).
 5. This should create two file called ${FILENAME}_read_lat.1.log and
 ${FILENAME}_write_lat.2.log and two file called latency.time.png and
-latency.cdf.png. 
+latency.cdf.png.
 6. The .log files currently consist of 4 columns as explained in the fio
 HOWTO. These are time, latency (us), direction (0=read), size (B).
 7. latency.time.png is a time series plot of the measured
 latency. latency.cdf.png is a plot of the CDF of the measured
 latency. Both files can be viewed using any reasonable image viewer.
+
+## Quick Start (threads.sh)
+
+1. Ensure fio, python and gunplot are installed and on your path.
+2. cd into top-level folder (fio-stuff by default).
+3. Check that the defaults in ./threads.sh are to your liking and
+match your system.
+4. sudo ./threads.sh -f <filename> -i <iodepth> -r <rwmixread> -s
+<size> [NB you may not need sudo depending on permissions]. Note that
+device needs to be a block device or regular file with rw
+permissions. Use -r 0 for write latency plots, the default is for read
+latency plots (-r 100).
+5. This should create two file called threads.log and threads.cpu.log
+and a plot called threads.png.
+7. threads.png is a plot of fio threads vs CPU utilization. It can be
+viewed using any reasonable image viewer.
 
 ## Updates
 
