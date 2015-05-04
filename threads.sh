@@ -76,6 +76,6 @@ CPUPERF_PID=$! ; trap 'kill -9 $CPUPERF_PID' EXIT
 
 FILENAME=${FILENAME} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} RW_MIX_READ=${RW_MIX_READ} \
-    IOENGINE=${IOENGINE} stdbuf -oL -eL fio ./fio-scripts/threads.fio | tee threads.log
+    IOENGINE=${IOENGINE} fio ./fio-scripts/threads.fio | tee threads.log
 ./pp-scripts/pprocess.py -m threads -c threads.log
 

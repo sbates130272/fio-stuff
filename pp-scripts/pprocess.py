@@ -62,7 +62,27 @@ def parse_thr(szFile):
         cpu2.append((cpu[i][0]+cpu[i][1])*thread)
         i=i+1
 
-    return threads,cpu2
+    return threads, cpu2
+
+def parse_cpu(szFile):
+    """Read in a cpuperf file which has the three column format time,
+    CPU utilization (%), memory usage (MB). Fill a 2D array with the
+    latency data and return that vector"""
+
+    data = []
+
+    fFile = open(szFile,'r')
+    for line in fFile:
+        if line[0]=="#":
+            continue
+        data.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
+
+    time = []; cpu = []; i=0
+    for i in xrange(len(data)):
+        time.append(data[i][0])
+        cpu.append(data[i][1])
+
+    return time, cpu
 
 def hist(pnData, nBins=100, bCdf=False):
     """A simple histogram binning function. We could use something
@@ -201,6 +221,11 @@ def threads(options, args):
     dtLabels['xlabel'] = "FIO threads"
     dtLabels['ylabel'] = "CPU Utilization (%)"
     plotxy(x, y, dtLabels, szFile='threads.png')
+    x,y = parse_cpu('threads.cpu.log')
+    dtLabels['title']  = "CPU Utilization vs time"
+    dtLabels['xlabel'] = "time (sec)"
+    dtLabels['ylabel'] = "CPU Utilization (%)"
+    plotxy(x, y, dtLabels, szFile='threads.cpu.png')
 
 if __name__=="__main__":
     import sys
