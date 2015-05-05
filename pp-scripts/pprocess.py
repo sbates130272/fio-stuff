@@ -252,7 +252,7 @@ def latency(options, args):
 
 def threads(options, args):
 
-    x,y1,y2 = parse_thr(args[0])
+    x,y1,y2,y3 = parse_thr(args[0])
     dtLabels=dict()
     dtLabels['title']  = "Threads vs CPU Utilization"
     dtLabels['xlabel'] = "FIO threads"
