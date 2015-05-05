@@ -27,6 +27,37 @@ import os
 import subprocess
 import re
 
+suffixmap = {
+    'n' : 1e-9   ,
+    'u' : 1e-6   ,
+    'm' : 1e-3   ,
+    'k' : 1e3    ,
+    'K' : 1e3    ,
+    'M' : 1e6    ,
+    'G' : 1e9    ,
+    'T' : 1e12
+}
+
+
+def suffix(szVal):
+    """Parse an input string looking for scientifc suffixes and if
+    they exist then modify the input value accordingly. The supported
+    values are given in the suffixmap dict"""
+
+    numeric = '0123456789-.'
+    for i,c in enumerate(szVal):
+        if c not in numeric:
+            break
+    number = szVal[:i]
+    unit = szVal[i:].lstrip()
+
+    try:
+        return float(number)*suffixmap[unit[0]]
+    except:
+        raise ValueError('pprocess.py: suffix() could not process '\
+                             '%s,%s' % (number, unit))
+
+
 def parse_lat(szFile):
     """Read in a latency FIO file which has the four column format time,
     latency (us), direction (0=read), size (B). Fill a 2D array with
@@ -48,6 +79,8 @@ def parse_thr(szFile):
 
     threads = []
     cpu     = []
+    readbw  = []
+    writebw = []
     fFile = open(szFile,'r')
     for line in fFile:
         if line[0]=="#":
@@ -56,13 +89,17 @@ def parse_thr(szFile):
             cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
         if "jobs=" in line:
             threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
+        if re.match("^READ", line.strip()):
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+        if re.match("^WRITE", line.strip()):
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for thread in threads:
         cpu2.append((cpu[i][0]+cpu[i][1])*thread)
         i=i+1
 
-    return threads, cpu2
+    return threads, cpu2, readbw, writebw
 
 def parse_cpu(szFile):
     """Read in a cpuperf file which has the three column format time,
@@ -215,17 +252,22 @@ def latency(options, args):
 
 def threads(options, args):
 
-    x,y = parse_thr(args[0])
+    x,y1,y2 = parse_thr(args[0])
     dtLabels=dict()
     dtLabels['title']  = "Threads vs CPU Utilization"
     dtLabels['xlabel'] = "FIO threads"
     dtLabels['ylabel'] = "CPU Utilization (%)"
-    plotxy(x, y, dtLabels, szFile='threads.png')
+    plotxy(x, y1, dtLabels, szFile='threads.cpu.png')
+    dtLabels=dict()
+    dtLabels['title']  = "Threads vs Read Bandwidth"
+    dtLabels['xlabel'] = "FIO threads"
+    dtLabels['ylabel'] = "Read Bandwidth"
+    plotxy(x, y2, dtLabels, szFile='threads.bw.png')
     x,y = parse_cpu('threads.cpu.log')
     dtLabels['title']  = "CPU Utilization vs time"
     dtLabels['xlabel'] = "time (sec)"
     dtLabels['ylabel'] = "CPU Utilization (%)"
-    plotxy(x, y, dtLabels, szFile='threads.cpu.png')
+    plotxy(x, y, dtLabels, szFile='threads.cpu.time.png')
 
 if __name__=="__main__":
     import sys
