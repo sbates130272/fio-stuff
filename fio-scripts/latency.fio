@@ -25,8 +25,8 @@
 rw=randrw
 random_generator=lfsr
 direct=1
-runtime=10
 group_reporting=1
+runtime=${RUNTIME}
 filename=${FILENAME}
 ioengine=${IOENGINE}
 iodepth=${IO_DEPTH}
