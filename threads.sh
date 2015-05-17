@@ -31,10 +31,15 @@ SIZE=1G
 IO_DEPTH=16
 BLOCK_SIZE=512
 RW_MIX_READ=100
+RUNTIME=10
 
   # Accept some key parameter changes from the command line.
-while getopts "r:n:f:i:s:e:" opt; do
+while getopts "t:b:r:n:f:i:s:e:" opt; do
     case "$opt" in
+	t)  RUNTIME=${OPTARG}
+            ;;
+	b)  BLOCK_SIZE=${OPTARG}
+            ;;
 	r)  RW_MIX_READ=${OPTARG}
             ;;
 	f)  FILENAME=${OPTARG}
@@ -76,6 +81,7 @@ CPUPERF_PID=$! ; trap 'kill -9 $CPUPERF_PID' EXIT
 
 FILENAME=${FILENAME} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} RW_MIX_READ=${RW_MIX_READ} \
-    IOENGINE=${IOENGINE} fio ./fio-scripts/threads.fio | tee threads.log
+    IOENGINE=${IOENGINE} RUNTIME=${RUNTIME} \
+    fio ./fio-scripts/threads.fio | tee threads.log
 ./pp-scripts/pprocess.py -m threads -c threads.log
 
