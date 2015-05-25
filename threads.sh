@@ -27,7 +27,7 @@
   # Parameters for running FIO
 FILENAME=/dev/nvme0n1
 IOENGINE=libaio
-SIZE=1G
+SIZE=16G
 IO_DEPTH=16
 BLOCK_SIZE=512
 RW_MIX_READ=100

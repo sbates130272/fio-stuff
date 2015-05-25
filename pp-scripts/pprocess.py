@@ -263,6 +263,11 @@ def threads(options, args):
     dtLabels['xlabel'] = "FIO threads"
     dtLabels['ylabel'] = "Read Bandwidth"
     plotxy(x, y2, dtLabels, szFile='threads.bw.png')
+    dtLabels=dict()
+    dtLabels['title']  = "Threads vs Read Bandwidth Efficiency"
+    dtLabels['xlabel'] = "FIO threads"
+    dtLabels['ylabel'] = "Read Bandwidth per HW Thread"
+    plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='threads.cpubw.png')
     x,y = parse_cpu('threads.cpu.log')
     dtLabels['title']  = "CPU Utilization vs time"
     dtLabels['xlabel'] = "time (sec)"
