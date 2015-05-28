@@ -38,10 +38,13 @@ BLOCK_SIZE=512
 COUNT=$((1000000 + ${SKIP} + ${CROP}))
 RW_MIX_READ=100
 RUNTIME=10
+FIOEXE=fio
 
   # Accept some key parameter changes from the command line.
-while getopts "t:b:r:n:f:i:s:e:" opt; do
+while getopts "x:t:b:r:n:f:i:s:e:" opt; do
     case "$opt" in
+	x)  FIOEXE=${OPTARG}
+            ;;
 	t)  RUNTIME=${OPTARG}
             ;;
 	b)  BLOCK_SIZE=${OPTARG}
@@ -94,6 +97,6 @@ rm *.log
 FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
     RUNTIME=${RUNTIME} LAT_LOG=${LAT_LOG} IOENGINE=${IOENGINE} \
-    fio ./fio-scripts/latency.fio
+    ${FIOEXE} ./fio-scripts/latency.fio
 cleanup
 ./pp-scripts/pprocess.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
