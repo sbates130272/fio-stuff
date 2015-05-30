@@ -101,6 +101,37 @@ def parse_thr(szFile):
 
     return threads, cpu2, readbw, writebw
 
+def parse_iod(szFile):
+    """Read in a standard FIO console log and pull out the data needed
+    for IO depth analysis."""
+
+    threads = []
+    iodepth = []
+    cpu     = []
+    readbw  = []
+    writebw = []
+    fFile = open(szFile,'r')
+    for line in fFile:
+        if line[0]=="#":
+            continue
+        if re.match("^cpu", line.strip()):
+            cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
+        if "jobs=" in line:
+            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
+        if "iodepth=" in line:
+           iodepth.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
+        if re.match("^READ", line.strip()):
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+        if re.match("^WRITE", line.strip()):
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+
+    cpu2 = []; i=0
+    for iod in iodepth:
+        cpu2.append((cpu[i][0]+cpu[i][1])*threads[0])
+        i=i+1
+
+    return iodepth, cpu2, readbw, writebw
+
 def parse_cpu(szFile):
     """Read in a cpuperf file which has the three column format time,
     CPU utilization (%), memory usage (MB). Fill a 2D array with the
@@ -277,6 +308,33 @@ def threads(options, args):
     dtLabels['ylabel'] = "CPU Utilization (%)"
     plotxy(x, y, dtLabels, szFile='threads.cpu.time.png')
 
+def iodepth(options, args):
+
+    x,y1,y2,y3 = parse_iod(args[0])
+    dtLabels=dict()
+    dtLabels['title']  = "IO Depth vs CPU Utilization"
+    dtLabels['xlabel'] = "IO Depth"
+    dtLabels['ylabel'] = "CPU Utilization (%)"
+    plotxy(x, y1, dtLabels, szFile='iodepth.cpu.png')
+    dtLabels=dict()
+    dtLabels['title']  = "IO Depth vs Read Bandwidth"
+    dtLabels['xlabel'] = "IO Depth"
+    dtLabels['ylabel'] = "Read Bandwidth"
+    plotxy(x, y2, dtLabels, szFile='iodepth.bw.png')
+    try:
+        dtLabels=dict()
+        dtLabels['title']  = "IO Depth vs Read Bandwidth Efficiency"
+        dtLabels['xlabel'] = "IO Depth"
+        dtLabels['ylabel'] = "Read Bandwidth per HW Thread"
+        plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='iodepth.cpubw.png')
+    except:
+        print "WARNING: Issue generating'iodepth.cpubw.png' skipping."
+    x,y = parse_cpu('iodepth.cpu.log')
+    dtLabels['title']  = "CPU Utilization vs time"
+    dtLabels['xlabel'] = "time (sec)"
+    dtLabels['ylabel'] = "CPU Utilization (%)"
+    plotxy(x, y, dtLabels, szFile='iodepth.cpu.time.png')
+
 if __name__=="__main__":
     import sys
     import optparse
@@ -303,5 +361,7 @@ if __name__=="__main__":
         latency(options, args)
     elif options.mode=="threads":
         threads(options, args)
+    elif options.mode=="iodepth":
+        iodepth(options, args)
     else:
         raise ValueError('invalid option for mode (%s)' % options.mode)

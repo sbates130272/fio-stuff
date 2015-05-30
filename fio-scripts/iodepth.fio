@@ -1,0 +1,63 @@
+########################################################################
+##
+## Copyright 2015 PMC-Sierra, Inc.
+##
+## Licensed under the Apache License, Version 2.0 (the "License"); you
+## may not use this file except in compliance with the License. You may
+## obtain a copy of the License at
+## http:##www.apache.org#licenses#LICENSE-2.0 Unless required by
+## applicable law or agreed to in writing, software distributed under the
+## License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+## CONDITIONS OF ANY KIND, either express or implied. See the License for
+## the specific language governing permissions and limitations under the
+## License.
+##
+########################################################################
+
+########################################################################
+##
+##   Description:
+##     A simple fio script to IOPS at increasing iodepth. Useful
+##     for CPU utilization.
+##
+########################################################################
+
+[global]
+rw=randrw
+random_generator=lfsr
+direct=0
+group_reporting=1
+runtime=${RUNTIME}
+filename=${FILENAME}
+ioengine=${IOENGINE}
+numjobs=${NUM_JOBS}
+bs=${BLOCK_SIZE}
+size=${SIZE}
+rwmixread=${RW_MIX_READ}
+
+[iodepth_1]
+iodepth=1
+
+[iodepth_2]
+stonewall
+iodepth=2
+
+[iodepth_4]
+stonewall
+iodepth=4
+
+[iodepth_8]
+stonewall
+iodepth=8
+
+[iodepth_16]
+stonewall
+iodepth=16
+
+[iodepth_32]
+stonewall
+iodepth=32
+
+[iodepth_64]
+stonewall
+iodepth=64
