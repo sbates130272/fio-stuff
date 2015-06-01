@@ -117,7 +117,7 @@ def parse_iod(szFile):
         if re.match("^cpu", line.strip()):
             cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
         if "jobs=" in line:
-            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
+            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[2])
         if "iodepth=" in line:
            iodepth.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
