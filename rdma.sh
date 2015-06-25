@@ -25,25 +25,23 @@
 
   # Parameters for running FIO
 MODE=server
-FILENAME=mmap:/sys/bus/pci/devices/0000:06:00.0/resource4
+FILENAME=/sys/bus/pci/devices/0000:06:00.0/resource4
 NUM_JOBS=1
 SIZE=1G
 IO_DEPTH=1
 BLOCK_SIZE=512
-RW_MIX_READ=100
-RUNTIME=10
 FIOEXE=fio
+RUNTIME=10
+PORT=12345
 
   # Accept some key parameter changes from the command line.
-while getopts "x:t:b:r:n:f:i:s:e:" opt; do
+while getopts "x:t:b:n:f:i:s:p:m" opt; do
     case "$opt" in
 	x)  FIOEXE=${OPTARG}
             ;;
 	t)  RUNTIME=${OPTARG}
             ;;
 	b)  BLOCK_SIZE=${OPTARG}
-            ;;
-	r)  RW_MIX_READ=${OPTARG}
             ;;
 	n)  NUM_JOBS=${OPTARG}
             ;;
@@ -53,7 +51,9 @@ while getopts "x:t:b:r:n:f:i:s:e:" opt; do
             ;;
 	s)  SIZE=${OPTARG}
             ;;
-	e)  IOENGINE=${OPTARG}
+	p)  PORT=${OPTARG}
+            ;;
+    m)  MODE=client
             ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -65,12 +65,6 @@ while getopts "x:t:b:r:n:f:i:s:e:" opt; do
 	    ;;
     esac
 done
-LAT_LOG=$(basename ${FILENAME})
-
-function cleanup {
-    rm -f *_slat.*.log *_clat.*.log > /dev/null
-    mv ${LAT_LOG}_lat.1.log ${LAT_LOG}.log
-}
 
 if [ ! -e "$FILENAME" ]; then
      echo "rdma.sh: You must specify an existing file or block IO device"
@@ -87,10 +81,12 @@ if [ ! -b "$FILENAME" ]; then
     fi
 fi
 
-rm *.log
-FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
-    BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
-    RUNTIME=${RUNTIME} LAT_LOG=${LAT_LOG} IOENGINE=${IOENGINE} \
-    ${FIOEXE} ./fio-scripts/rdma.fio
-cleanup
-./pp-scripts/pprocess.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
+if [ ${MODE}='master' ]; then
+    MEM=mmap:${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} \
+        BLOCK_SIZE=${BLOCK_SIZE} PORT=${PORT} IO_DEPTH=${IO_DEPTH} \
+        ${FIOEXE} ./fio-scripts/rdma-${MODE}.fio
+else
+    SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
+        BLOCK_SIZE=${BLOCK_SIZE} RUNTIME=${RUNTIME} PORT=${PORT} \
+        ${FIOEXE} ./fio-scripts/rdma-${MODE}.fio
+fi

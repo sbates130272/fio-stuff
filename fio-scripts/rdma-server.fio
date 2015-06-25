@@ -22,12 +22,11 @@
 ########################################################################
 
 [rdma-server]
-rw=randrw
+rw=read
 random_generator=lfsr
 group_reporting=1
 ioengine=rdma
-runtime=${RUNTIME}
-map=${FILENAME}
+mem=${MEM}
 port=${PORT}
 bs=${BLOCK_SIZE}
 size=${SIZE}
