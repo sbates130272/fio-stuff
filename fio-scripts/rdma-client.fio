@@ -22,13 +22,14 @@
 ########################################################################
 
 [rdma-client]
-rw=randrw
+rw=write
 random_generator=lfsr
 group_reporting=1
 ioengine=rdma
 runtime=${RUNTIME}
-map=${FILENAME}
+hostname=${HOSTNAME}
 port=${PORT}
+verb=${VERB}
 bs=${BLOCK_SIZE}
 size=${SIZE}
 iodepth=${IO_DEPTH}

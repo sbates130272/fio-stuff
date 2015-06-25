@@ -33,9 +33,11 @@ BLOCK_SIZE=512
 FIOEXE=fio
 RUNTIME=10
 PORT=12345
+HOSTNAME=donard-rdma
+VERB=read
 
   # Accept some key parameter changes from the command line.
-while getopts "x:t:b:n:f:i:s:p:m" opt; do
+while getopts "x:t:b:n:f:i:s:p:h:r:m" opt; do
     case "$opt" in
 	x)  FIOEXE=${OPTARG}
             ;;
@@ -53,6 +55,10 @@ while getopts "x:t:b:n:f:i:s:p:m" opt; do
             ;;
 	p)  PORT=${OPTARG}
             ;;
+	h)  HOSTNAME=${OPTARG}
+            ;;
+	v)  VERB=${OPTARG}
+            ;;
     m)  MODE=client
             ;;
 	\?)
@@ -66,27 +72,28 @@ while getopts "x:t:b:n:f:i:s:p:m" opt; do
     esac
 done
 
-if [ ! -e "$FILENAME" ]; then
-     echo "rdma.sh: You must specify an existing file or block IO device"
-     exit 1
-fi
-if [ ! -b "$FILENAME" ]; then
-    if [ ! -f "$FILENAME" ]; then
-	echo "rdma.sh: Only block devices or regular files are permitted"
-	exit 1
+echo ${MODE}
+if [ "${MODE}" == "master" ]; then
+    if [ ! -e "$FILENAME" ]; then
+        echo "rdma.sh: You must specify an existing file or block IO device"
+        exit 1
     fi
-    if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
-	echo "rdma.sh: Do not have read and write access to the target file"
-	exit 1
+    if [ ! -b "$FILENAME" ]; then
+        if [ ! -f "$FILENAME" ]; then
+	        echo "rdma.sh: Only block devices or regular files are permitted"
+	        exit 1
+        fi
+        if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
+	        echo "rdma.sh: Do not have read and write access to the target file"
+	        exit 1
+        fi
     fi
-fi
-
-if [ ${MODE}='master' ]; then
     MEM=mmap:${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} \
         BLOCK_SIZE=${BLOCK_SIZE} PORT=${PORT} IO_DEPTH=${IO_DEPTH} \
         ${FIOEXE} ./fio-scripts/rdma-${MODE}.fio
 else
     SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
         BLOCK_SIZE=${BLOCK_SIZE} RUNTIME=${RUNTIME} PORT=${PORT} \
+        HOSTNAME=${HOSTNAME} VERB=${VERB} \
         ${FIOEXE} ./fio-scripts/rdma-${MODE}.fio
 fi
