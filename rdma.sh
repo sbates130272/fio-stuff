@@ -25,7 +25,7 @@
 
   # Parameters for running FIO
 MODE=server
-FILENAME=/sys/bus/pci/devices/0000:06:00.0/resource4
+FILENAME=
 NUM_JOBS=1
 SIZE=1G
 IO_DEPTH=1
@@ -37,7 +37,8 @@ HOSTNAME=donard-rdma
 VERB=read
 
   # Accept some key parameter changes from the command line.
-while getopts "x:t:b:n:f:i:s:p:h:r:m" opt; do
+  # Note -z is a hack to save me typing the mmap file all the time ;-).
+while getopts "x:t:b:n:f:i:s:p:h:r:mz" opt; do
     case "$opt" in
 	x)  FIOEXE=${OPTARG}
             ;;
@@ -61,6 +62,8 @@ while getopts "x:t:b:n:f:i:s:p:h:r:m" opt; do
             ;;
     m)  MODE=client
             ;;
+    z)  FILENAME=/sys/bus/pci/devices/0000:06:00.0/resource4
+            ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
 	    exit 1
@@ -72,25 +75,26 @@ while getopts "x:t:b:n:f:i:s:p:h:r:m" opt; do
     esac
 done
 
-echo ${MODE}
-if [ "${MODE}" == "master" ]; then
-    if [ ! -e "$FILENAME" ]; then
-        echo "rdma.sh: You must specify an existing file or block IO device"
-        exit 1
-    fi
-    if [ ! -b "$FILENAME" ]; then
-        if [ ! -f "$FILENAME" ]; then
-	        echo "rdma.sh: Only block devices or regular files are permitted"
-	        exit 1
+if [ "${MODE}" == "server" ]; then
+    if [ -e "$FILENAME" ]; then
+        if [ ! -b "$FILENAME" ]; then
+            if [ ! -f "$FILENAME" ]; then
+	            echo "rdma.sh: Only block devices or regular files are permitted"
+	            exit 1
+            fi
+            if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
+	            echo "rdma.sh: Do not have read and write access to the target file"
+	            exit 1
+            fi
         fi
-        if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
-	        echo "rdma.sh: Do not have read and write access to the target file"
-	        exit 1
-        fi
+        MAP="--iomem mmap:${FILENAME}"
+    else
+        MAP=
     fi
-    MEM=mmap:${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} \
+    echo ${MEMSTR}
+    SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} \
         BLOCK_SIZE=${BLOCK_SIZE} PORT=${PORT} IO_DEPTH=${IO_DEPTH} \
-        ${FIOEXE} ./fio-scripts/rdma-${MODE}.fio
+        ${FIOEXE} ${MAP} ./fio-scripts/rdma-${MODE}.fio
 else
     SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
         BLOCK_SIZE=${BLOCK_SIZE} RUNTIME=${RUNTIME} PORT=${PORT} \

@@ -23,8 +23,6 @@
 
 [rdma-client]
 rw=write
-random_generator=lfsr
-group_reporting=1
 ioengine=rdma
 runtime=${RUNTIME}
 hostname=${HOSTNAME}
@@ -33,4 +31,3 @@ verb=${VERB}
 bs=${BLOCK_SIZE}
 size=${SIZE}
 iodepth=${IO_DEPTH}
-iodepth_batch_complete=1

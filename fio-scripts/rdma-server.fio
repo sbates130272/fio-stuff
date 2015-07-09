@@ -23,10 +23,7 @@
 
 [rdma-server]
 rw=read
-random_generator=lfsr
-group_reporting=1
 ioengine=rdma
-mem=${MEM}
 port=${PORT}
 bs=${BLOCK_SIZE}
 size=${SIZE}
