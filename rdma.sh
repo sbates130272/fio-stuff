@@ -62,7 +62,7 @@ while getopts "x:t:b:n:f:i:s:p:h:r:mz" opt; do
             ;;
     m)  MODE=client
             ;;
-    z)  FILENAME=/sys/bus/pci/devices/0000:06:00.0/resource4
+    z)  FILENAME=/sys/bus/pci/devices/0000:02:00.0/resource4
             ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -76,16 +76,21 @@ while getopts "x:t:b:n:f:i:s:p:h:r:mz" opt; do
 done
 
 if [ "${MODE}" == "server" ]; then
-    if [ -e "$FILENAME" ]; then
+    if [ ! -z "$FILENAME" ]; then
+        echo ${FILENAME}
+        if [ ! -e "$FILENAME" ]; then
+	        echo "rdma.sh: The target file does not exist (${FILENAME})"
+	        exit 1
+        fi
         if [ ! -b "$FILENAME" ]; then
             if [ ! -f "$FILENAME" ]; then
 	            echo "rdma.sh: Only block devices or regular files are permitted"
 	            exit 1
             fi
-            if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
-	            echo "rdma.sh: Do not have read and write access to the target file"
-	            exit 1
-            fi
+        fi
+        if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
+	        echo "rdma.sh: Do not have read and write access to the target file"
+	        exit 1
         fi
         MAP="--iomem mmap:${FILENAME}"
     else
