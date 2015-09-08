@@ -35,13 +35,13 @@ NUM_JOBS=1
 SIZE=1G
 IO_DEPTH=1
 BLOCK_SIZE=512
-COUNT=$((1000000 + ${SKIP} + ${CROP}))
 RW_MIX_READ=100
 RUNTIME=10
 FIOEXE=fio
+COUNT=100000
 
   # Accept some key parameter changes from the command line.
-while getopts "x:t:b:r:n:f:i:s:e:" opt; do
+while getopts "x:t:b:r:n:f:i:s:e:c:" opt; do
     case "$opt" in
 	x)  FIOEXE=${OPTARG}
             ;;
@@ -61,6 +61,8 @@ while getopts "x:t:b:r:n:f:i:s:e:" opt; do
             ;;
 	e)  IOENGINE=${OPTARG}
             ;;
+	c)  COUNT=${OPTARG}
+            ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
 	    exit 1
@@ -72,6 +74,7 @@ while getopts "x:t:b:r:n:f:i:s:e:" opt; do
     esac
 done
 LAT_LOG=$(basename ${FILENAME})
+COUNT=$((${COUNT} + ${SKIP} + ${CROP}))
 
 function cleanup {
     rm -f *_slat.*.log *_clat.*.log > /dev/null
