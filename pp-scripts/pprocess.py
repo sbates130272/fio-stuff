@@ -132,6 +132,41 @@ def parse_iod(szFile):
 
     return iodepth, cpu2, readbw, writebw
 
+def parse_bs(szFile):
+    """Read in a standard FIO console log and pull out the data needed
+    for block size (bs) analysis."""
+
+    threads = []
+    bss     = []
+    cpu     = []
+    readbw  = []
+    writebw = []
+    fFile = open(szFile,'r')
+    for line in fFile:
+        if line[0]=="#":
+            continue
+        if re.match("^cpu", line.strip()):
+            cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
+        if "jobs=" in line:
+            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[2])
+        if ", bs=" in line:
+            tmp = line.split(',')[1].split('-')[0][4:].strip()
+            try:
+                bss.append(float(tmp))
+            except:
+                bss.append(suffix(tmp))
+        if re.match("^READ", line.strip()):
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+        if re.match("^WRITE", line.strip()):
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+
+    cpu2 = []; i=0
+    for iod in bss:
+        cpu2.append((cpu[i][0]+cpu[i][1])*threads[0])
+        i=i+1
+
+    return bss, cpu2, readbw, writebw
+
 def parse_cpu(szFile):
     """Read in a cpuperf file which has the three column format time,
     CPU utilization (%), memory usage (MB). Fill a 2D array with the
@@ -210,7 +245,7 @@ def plotxdf(peX, peY, dtLabels=None, szFile='plotxdf.png', bCdf=False):
     proc.wait()
     os.remove(TMP_FILE)
 
-def plotxy(peX, peY, dtLabels=None, szFile='plotxy.png'):
+def plotxy(peX, peY, dtLabels=None, szFile='plotxy.png', logscale=False):
     """Use the GnuPlot program to plot the specified input data. For
     now we assume this is latency plot though we may generalize in
     time. Also, for now we dump the data to a temp file rather than
@@ -242,6 +277,8 @@ def plotxy(peX, peY, dtLabels=None, szFile='plotxy.png'):
             proc.stdin.write('set ylabel \'%s\'\n' % dtLabels['ylabel'])
     except:
         pass
+    if logscale:
+        proc.stdin.write('set logscale x\n')
     proc.stdin.write('set grid\n')
     proc.stdin.write('plot \"%s" with lines\n' % TMP_FILE)
     proc.stdin.write('quit\n')
@@ -335,6 +372,33 @@ def iodepth(options, args):
     dtLabels['ylabel'] = "CPU Utilization (%)"
     plotxy(x, y, dtLabels, szFile='iodepth.cpu.time.png')
 
+def bs(options, args):
+
+    x,y1,y2,y3 = parse_bs(args[0])
+    dtLabels=dict()
+    dtLabels['title']  = "Block Size vs CPU Utilization"
+    dtLabels['xlabel'] = "Block Size"
+    dtLabels['ylabel'] = "CPU Utilization (%)"
+    plotxy(x, y1, dtLabels, szFile='bs.cpu.png', logscale=True)
+    dtLabels=dict()
+    dtLabels['title']  = "Block Size vs Bandwidth"
+    dtLabels['xlabel'] = "Block Size"
+    dtLabels['ylabel'] = "Bandwidth"
+    plotxy(x, y2, dtLabels, szFile='bs.bw.png', logscale=True)
+    try:
+        dtLabels=dict()
+        dtLabels['title']  = "Block Size vs Bandwidth Efficiency"
+        dtLabels['xlabel'] = "Block Size"
+        dtLabels['ylabel'] = "Bandwidth per HW Thread"
+        plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='bs.cpubw.png', logscale=True)
+    except:
+        print "WARNING: Issue generating'bs.cpubw.png' skipping."
+    x,y = parse_cpu('bs.cpu.log')
+    dtLabels['title']  = "CPU Utilization vs time"
+    dtLabels['xlabel'] = "time (sec)"
+    dtLabels['ylabel'] = "CPU Utilization (%)"
+    plotxy(x, y, dtLabels, szFile='bs.cpu.time.png')
+
 if __name__=="__main__":
     import sys
     import optparse
@@ -363,5 +427,7 @@ if __name__=="__main__":
         threads(options, args)
     elif options.mode=="iodepth":
         iodepth(options, args)
+    elif options.mode=="bs":
+        bs(options, args)
     else:
         raise ValueError('invalid option for mode (%s)' % options.mode)
