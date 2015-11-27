@@ -290,15 +290,15 @@ def threads(options, args):
     dtLabels['ylabel'] = "CPU Utilization (%)"
     plotxy(x, y1, dtLabels, szFile='threads.cpu.png')
     dtLabels=dict()
-    dtLabels['title']  = "Threads vs Read Bandwidth"
+    dtLabels['title']  = "Threads vs Bandwidth"
     dtLabels['xlabel'] = "FIO threads"
-    dtLabels['ylabel'] = "Read Bandwidth"
+    dtLabels['ylabel'] = "Bandwidth"
     plotxy(x, y2, dtLabels, szFile='threads.bw.png')
     try:
         dtLabels=dict()
-        dtLabels['title']  = "Threads vs Read Bandwidth Efficiency"
+        dtLabels['title']  = "Threads vs Bandwidth Efficiency"
         dtLabels['xlabel'] = "FIO threads"
-        dtLabels['ylabel'] = "Read Bandwidth per HW Thread"
+        dtLabels['ylabel'] = "Bandwidth per HW Thread"
         plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='threads.cpubw.png')
     except:
         print "WARNING: Issue generating'threads.cpubw.png' skipping."
@@ -317,15 +317,15 @@ def iodepth(options, args):
     dtLabels['ylabel'] = "CPU Utilization (%)"
     plotxy(x, y1, dtLabels, szFile='iodepth.cpu.png')
     dtLabels=dict()
-    dtLabels['title']  = "IO Depth vs Read Bandwidth"
+    dtLabels['title']  = "IO Depth vs Bandwidth"
     dtLabels['xlabel'] = "IO Depth"
-    dtLabels['ylabel'] = "Read Bandwidth"
+    dtLabels['ylabel'] = "Bandwidth"
     plotxy(x, y2, dtLabels, szFile='iodepth.bw.png')
     try:
         dtLabels=dict()
-        dtLabels['title']  = "IO Depth vs Read Bandwidth Efficiency"
+        dtLabels['title']  = "IO Depth vs Bandwidth Efficiency"
         dtLabels['xlabel'] = "IO Depth"
-        dtLabels['ylabel'] = "Read Bandwidth per HW Thread"
+        dtLabels['ylabel'] = "Bandwidth per HW Thread"
         plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='iodepth.cpubw.png')
     except:
         print "WARNING: Issue generating'iodepth.cpubw.png' skipping."
