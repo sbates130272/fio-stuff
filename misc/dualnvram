@@ -1,0 +1,18 @@
+#!/bin/bash
+
+IOPMEM_FILE=/mnt/iopmem/tst
+FIO_ENGINE=sync
+FIO_OP=randwrite
+FIO_RUNTIME=60
+FIO_NUMJOBS=1
+
+fio --name=DualNvram --filename=$IOPMEM_FILE \
+    --direct=1 --ioengine=$FIO_IOENGINE --sync=$FIO_SYNC  \
+    --thread --rw=$FIO_OP --bs=4k --runtime=$FIO_RUNTIME --ramp_time=5 \
+    --numjobs=$FIO_NUMJOBS --iodepth=$FIO_IODEPTH --randrepeat=0 \
+    --refill_buffers \
+    --name=DualNvme --filename=$NVME_FILE \
+    --direct=1 --ioengine=$FIO_IOENGINE --sync=$FIO_SYNC  \
+    --thread --rw=$FIO_OP --bs=4k --runtime=$FIO_RUNTIME --ramp_time=5 \
+    --numjobs=$FIO_NUMJOBS --iodepth=$FIO_IODEPTH --randrepeat=0 \
+    --refill_buffers

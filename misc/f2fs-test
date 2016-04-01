@@ -1,0 +1,12 @@
+#!/bin/bash
+
+DEV=/dev/nvme0n1
+FIO=fio
+
+umount $DEV
+mkfs.f2fs $DEV
+mount $DEV /mnt/f2fs
+dd if=/dev/zero of=/mnt/f2fs/tst bs=1k count=7M
+
+#$FIO --name=f2fs-test --filename /mnt/f2fs/tst --rw=randwrite \
+#     --size=100% --iodepth=16 --ioengine=libaio --numjobs=1
