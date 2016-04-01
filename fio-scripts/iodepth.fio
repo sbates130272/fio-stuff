@@ -25,7 +25,7 @@
 [global]
 rw=randrw
 random_generator=lfsr
-direct=0
+direct=1
 group_reporting=1
 runtime=${RUNTIME}
 filename=${FILENAME}

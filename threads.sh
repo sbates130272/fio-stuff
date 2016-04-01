@@ -27,7 +27,7 @@
   # Parameters for running FIO
 FILENAME=/dev/nvme0n1
 IOENGINE=libaio
-SIZE=16G
+SIZE=100%
 IO_DEPTH=16
 BLOCK_SIZE=512
 RW_MIX_READ=100
@@ -87,4 +87,3 @@ FILENAME=${FILENAME} SIZE=${SIZE} IO_DEPTH=${IO_DEPTH} \
     IOENGINE=${IOENGINE} RUNTIME=${RUNTIME} \
     ${FIOEXE} ./fio-scripts/threads.fio | tee threads.log
 ./pp-scripts/pprocess.py -m threads -c threads.log
-
