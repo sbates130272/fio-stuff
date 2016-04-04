@@ -1,12 +1,97 @@
 #!/bin/bash
+########################################################################
+##
+## Copyright 2015 PMC-Sierra, Inc.
+##
+## Licensed under the Apache License, Version 2.0 (the "License"); you
+## may not use this file except in compliance with the License. You may
+## obtain a copy of the License at
+## http://www.apache.org/licenses/LICENSE-2.0 Unless required by
+## applicable law or agreed to in writing, software distributed under the
+## License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+## CONDITIONS OF ANY KIND, either express or implied. See the License for
+## the specific language governing permissions and limitations under the
+## License.
+##
+########################################################################
 
-DEV=/dev/nvme0n1
-FIO=fio
+########################################################################
+##
+##   Description:
+##     A simple shell script to do some fun f2fs testing.
+##
+########################################################################
 
-umount $DEV
-mkfs.f2fs $DEV
-mount $DEV /mnt/f2fs
-dd if=/dev/zero of=/mnt/f2fs/tst bs=1k count=7M
+set -e
 
-#$FIO --name=f2fs-test --filename /mnt/f2fs/tst --rw=randwrite \
-#     --size=100% --iodepth=16 --ioengine=libaio --numjobs=1
+  # Parameters for running the test
+FORMAT=FALSE
+RUN_DD=TRUE
+RUN_FIO=TRUE
+
+DEVICE=/dev/nvme0n1
+MNT=/mnt/f2fs
+FILENAME=${MNT}/tst
+FIOEXE=fio
+COUNT=4M
+SIZE=100
+FS=f2fs
+
+  # Accept some key parameter changes from the command line.
+while getopts "x:d:f:s:c:y:tz" opt; do
+    case "$opt" in
+	x)  FIOEXE=${OPTARG}
+            ;;
+	d)  DEVICE=${OPTARG}
+            ;;
+	f)  FILENAME=${OPTARG}
+            ;;
+	s)  SIZE=${OPTARG}
+	    ;;
+	c)  COUNT=${OPTARG}
+            ;;
+	y)  FS=${OPTARG}
+            ;;
+	t)  FORMAT=TRUE
+            ;;
+	z)  RUN_DD=FUN_FIO=FALSE
+            ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    exit 1
+	    ;;
+	:)
+	    echo "Option -$OPTARG requires an argument." >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+umount $DEVICE
+if [ "$FORMAT" = TRUE ]; then
+    echo "Formatting..."
+    mkfs.$FS $DEVICE
+fi
+
+  # N.B The odd -o call for blktrace is to accomodate when blktrace is
+  # run inside a VM.
+
+mount -t $FS $DEVICE $MNT
+if [ "$RUN_DD" = TRUE ]; then
+    echo "Running dd..."
+    blktrace -a issue -a complete -d $DEVICE -o - > blktrace.${FS}.dd &
+    BLKTRACE_PID=$!
+    dd if=/dev/zero of=$FILENAME bs=1k count=${COUNT}
+    sync; kill -15 $BLKTRACE_PID
+    hdparm --fibmap $FILENAME > fibmap.${FS}.dd
+fi
+
+if [ "$RUN_FIO" = TRUE ]; then
+    echo "Running fio..."
+    blktrace -a issue -a complete -d $DEVICE -o - > blktrace.${FS}.fio &
+    BLKTRACE_PID=$!
+    $FIOEXE --name=f2fs-test --filename $FILENAME --rw=randwrite \
+	    --size=100% --iodepth=1 --ioengine=sync --numjobs=1
+    sync; kill -15 $BLKTRACE_PID
+    hdparm --fibmap $FILENAME > fibmap.${FS}.fio
+fi
