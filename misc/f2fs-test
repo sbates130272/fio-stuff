@@ -67,7 +67,9 @@ while getopts "x:d:f:s:c:y:tz" opt; do
     esac
 done
 
+set +e
 umount $DEVICE
+set -e
 if [ "$FORMAT" = TRUE ]; then
     echo "Formatting..."
     mkfs.$FS $DEVICE
@@ -79,7 +81,7 @@ fi
 mount -t $FS $DEVICE $MNT
 if [ "$RUN_DD" = TRUE ]; then
     echo "Running dd..."
-    blktrace -a issue -a complete -d $DEVICE -o - > blktrace.${FS}.dd &
+    blktrace -d $DEVICE -o - > blktrace.${FS}.dd &
     BLKTRACE_PID=$!
     dd if=/dev/zero of=$FILENAME bs=1k count=${COUNT}
     sync; kill -15 $BLKTRACE_PID
@@ -88,7 +90,7 @@ fi
 
 if [ "$RUN_FIO" = TRUE ]; then
     echo "Running fio..."
-    blktrace -a issue -a complete -d $DEVICE -o - > blktrace.${FS}.fio &
+    blktrace -d $DEVICE -o - > blktrace.${FS}.fio &
     BLKTRACE_PID=$!
     $FIOEXE --name=f2fs-test --filename $FILENAME --rw=randwrite \
 	    --size=100% --iodepth=1 --ioengine=sync --numjobs=1
