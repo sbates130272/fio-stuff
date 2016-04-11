@@ -36,15 +36,18 @@ FIOEXE=fio
 COUNT=1k
 SIZE=100
 FS=f2fs
+FSYNC=100
 
   # Accept some key parameter changes from the command line.
-while getopts "x:d:f:s:c:y:tz" opt; do
+while getopts "x:d:f:F:s:c:y:tz" opt; do
     case "$opt" in
 	x)  FIOEXE=${OPTARG}
             ;;
 	d)  DEVICE=${OPTARG}
             ;;
 	f)  FILENAME=${OPTARG}
+            ;;
+	F)  FSYNC=${OPTARG}
             ;;
 	s)  SIZE=${OPTARG}
 	    ;;
@@ -93,7 +96,7 @@ if [ "$RUN_FIO" = TRUE ]; then
     blktrace -d $DEVICE -o - > blktrace.${FS}.fio &
     BLKTRACE_PID=$!
     $FIOEXE --name=f2fs-test --filename $FILENAME --rw=randwrite \
-	    --size=$SIZE --iodepth=1 --ioengine=sync --numjobs=1
+	    --size=$SIZE --iodepth=1 --ioengine=sync --numjobs=1 --fsync=$FSYNC
     sync; kill -15 $BLKTRACE_PID
     hdparm --fibmap $FILENAME > fibmap.${FS}.fio
 fi
