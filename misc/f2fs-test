@@ -86,6 +86,8 @@ if [ "$RUN_DD" = TRUE ]; then
     hdparm --fibmap $FILENAME > fibmap.${FS}.dd
 fi
 
+sleep 1
+
 if [ "$RUN_FIO" = TRUE ]; then
     echo "Running fio..."
     blktrace -d $DEVICE -o - > blktrace.${FS}.fio &
