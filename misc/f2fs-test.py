@@ -49,6 +49,30 @@ def fibmap(inp_file):
     for this in fibmap2:
         fFileOut.write("%d %d\n" % (this[0], this[1]))
 
+def blktrace(inp_file):
+    """A post-processing file for the blktrace output."""
+
+    fin = open(inp_file, "r")
+    fout = open(inp_file+".out", "w")
+    p = sp.Popen(["blkparse", "-q", "-f", "%T.%9t %a %d %S %n\n", "-i", "-"],
+                 stdin=fin, stdout=sp.PIPE)
+    lines, _ = p.communicate()
+
+    for l in lines.split("\n"):
+        if not l: continue
+        timestamp, cmd, rw, sector, count = l.split()
+
+        if cmd != "C": continue
+
+        sector = int(sector)
+        count = int(count)
+        last = sector + count - 1
+        direction = 1 if "R" in rw else 0
+
+        if not count: continue
+
+        fout.write("{} {} {} {}\n".format(timestamp, sector, last, direction))
+
 if __name__=="__main__":
     import sys
     import argparse
@@ -62,3 +86,4 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     fibmap(args.fibmap)
+    blktrace(args.blktrace)
