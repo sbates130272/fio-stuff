@@ -28,26 +28,42 @@ from __future__ import unicode_literals
 import re
 import subprocess as sp
 
+class ParseException(Exception):
+    pass
+
 def fibmap(inp_file):
     """A post-processing file for the fibmap output."""
 
-    fibmap = []
-    fFile = open(inp_file,'r')
-    for line in fFile:
-        if re.match("^filesystem", line.strip()):
-            bs  = map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0]
-            lba = map(int, re.findall("[-+]?\d+[\.]?\d*", line))[2]
-        if re.match("^[0-9]", line.strip()):
-            fibmap.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line)))
+    fin = open(inp_file,'r')
+    fout = open(inp_file+'.out','w')
 
-    fibmap2 = []
-    for this in fibmap:
-        fibmap2.append([this[0], this[1]])
-        fibmap2.append([this[0]+(this[3]-1)*lba, this[2]])
+    rhdr = re.compile(r"^filesystem blocksize (?P<blocksize>\d+), "
+                      "begins at LBA (?P<lba_start>\d+); "
+                      "assuming (?P<sector_size>\d+) byte sectors.$")
 
-    fFileOut = open(inp_file+'.out','w')
-    for this in fibmap2:
-        fFileOut.write("%d %d\n" % (this[0], this[1]))
+    hdr = None
+    for l in fin:
+        l = l.strip()
+        m = rhdr.match(l)
+        if m:
+            hdr = m.groupdict()
+            hdr = {k: int(v) for k, v in hdr.items()}
+            continue
+        if l.startswith("byte_offset"):
+            break
+
+    if not hdr:
+        raise ParseException("Unable to parse fibmap file. No valid header.")
+
+    def output_line(*args):
+        fout.write("{} {}\n".format(*args))
+
+    for l in fin:
+        offset, lba_start, lba_end, sectors = [int(x) for x in l.split()]
+
+        output_line(offset, lba_start)
+        output_line(offset + (sectors-1)*hdr["sector_size"], lba_end)
+
 
 def blktrace(inp_file):
     """A post-processing file for the blktrace output."""
@@ -85,5 +101,8 @@ if __name__=="__main__":
                         help="the blktrace file")
     args = parser.parse_args()
 
-    fibmap(args.fibmap)
-    blktrace(args.blktrace)
+    try:
+        fibmap(args.fibmap)
+        blktrace(args.blktrace)
+    except Exception as e:
+        print(e)
