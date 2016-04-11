@@ -22,13 +22,17 @@
 ##
 ########################################################################
 
-import re
+from __future__ import print_function
+from __future__ import unicode_literals
 
-def fibmap(options):
+import re
+import subprocess as sp
+
+def fibmap(inp_file):
     """A post-processing file for the fibmap output."""
 
     fibmap = []
-    fFile = open(options.fibmap,'r')
+    fFile = open(inp_file,'r')
     for line in fFile:
         if re.match("^filesystem", line.strip()):
             bs  = map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0]
@@ -41,22 +45,20 @@ def fibmap(options):
         fibmap2.append([this[0], this[1]])
         fibmap2.append([this[0]+(this[3]-1)*lba, this[2]])
 
-    fFileOut = open(options.fibmap+'.out','w')
+    fFileOut = open(inp_file+'.out','w')
     for this in fibmap2:
-        fFileOut.write ("%d %d\n" % (this[0], this[1]))
+        fFileOut.write("%d %d\n" % (this[0], this[1]))
 
 if __name__=="__main__":
     import sys
-    import optparse
+    import argparse
 
-    parser = optparse.OptionParser()
-    parser.add_option("-f", "--fibmap", action="store", type=str,
-                      default=None, help="the fibmap file")
-    parser.add_option("-b", "--blktrace", action="store", type=str,
-                      default=None, help="the blktrace file")
-    options, args = parser.parse_args()
+    parser = argparse.ArgumentParser(description=
+                                     "post process f2fs_test script output")
+    parser.add_argument("-f", "--fibmap", required=True,
+                        help="the fibmap file")
+    parser.add_argument("-b", "--blktrace", required=True,
+                        help="the blktrace file")
+    args = parser.parse_args()
 
-    if (not options.fibmap) or (not options.blktrace):
-        raise ValueError('must specify both fibmap and blktrace files')
-
-    fibmap(options)
+    fibmap(args.fibmap)
