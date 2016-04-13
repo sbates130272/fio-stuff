@@ -38,6 +38,9 @@ SIZE=100
 FS=f2fs
 FSYNC=100
 
+set +e; rm *.out; set -e
+DATESTR=$(date +%S%M%H%d%m%y)
+
   # Accept some key parameter changes from the command line.
 while getopts "x:d:f:F:s:c:y:tz" opt; do
     case "$opt" in
@@ -100,3 +103,16 @@ if [ "$RUN_FIO" = TRUE ]; then
     sync; kill -15 $BLKTRACE_PID
     hdparm --fibmap $FILENAME > fibmap.${FS}.fio
 fi
+
+  # Run the post-processing...
+
+if [ "$RUN_DD" = TRUE ]; then
+    ./f2fs-test.py -f fibmap.${FS}.dd -b blktrace.${FS}.dd
+fi
+if [ "$RUN_FIO" = TRUE ]; then
+    ./f2fs-test.py -f fibmap.${FS}.fio -b blktrace.${FS}.fio
+fi
+
+  # Tar up the output .out files and timestamp them
+
+tar cvzf f2fs-test.${FS}.${DATESTR}.tar.bz2 *.out
