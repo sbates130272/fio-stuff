@@ -18,7 +18,7 @@
 ########################################################################
 ##
 ##   Description:
-##     A simple shell script to do some fun f2fs testing.
+##     A simple shell script to do some fun filesystem testing.
 ##
 ########################################################################
 
@@ -30,12 +30,12 @@ RUN_DD=TRUE
 RUN_FIO=TRUE
 
 DEVICE=/dev/nvme0n1
-MNT=/mnt/f2fs
+FS=ext4
+MNT=/mnt/${FS}
 FILENAME=${MNT}/tst
 FIOEXE=fio
 COUNT=1k
 SIZE=100
-FS=f2fs
 FSYNC=100
 
 set +e; rm *.out; set -e
@@ -98,7 +98,7 @@ if [ "$RUN_FIO" = TRUE ]; then
     echo "Running fio..."
     blktrace -d $DEVICE -o - > blktrace.${FS}.fio &
     BLKTRACE_PID=$!
-    $FIOEXE --name=f2fs-test --filename $FILENAME --rw=randwrite \
+    $FIOEXE --name=fs-test --filename $FILENAME --rw=randwrite \
 	    --size=$SIZE --iodepth=1 --ioengine=sync --numjobs=1 --fsync=$FSYNC
     sync; kill -15 $BLKTRACE_PID
     hdparm --fibmap $FILENAME > fibmap.${FS}.fio
@@ -107,12 +107,12 @@ fi
   # Run the post-processing...
 
 if [ "$RUN_DD" = TRUE ]; then
-    ./f2fs-test.py -f fibmap.${FS}.dd -b blktrace.${FS}.dd
+    ./fs-test.py -f fibmap.${FS}.dd -b blktrace.${FS}.dd
 fi
 if [ "$RUN_FIO" = TRUE ]; then
-    ./f2fs-test.py -f fibmap.${FS}.fio -b blktrace.${FS}.fio
+    ./fs-test.py -f fibmap.${FS}.fio -b blktrace.${FS}.fio
 fi
 
   # Tar up the output .out files and timestamp them
 
-tar cvzf f2fs-test.${FS}.${DATESTR}.tar.bz2 *.out
+tar cvzf fs-test.${FS}.${DATESTR}.tar.bz2 *.out

@@ -18,7 +18,7 @@
 ########################################################################
 ##
 ##   Description:
-##     A post-processor for the f2fs scripting stuff.
+##     A post-processor for the filesystem scripting stuff.
 ##
 ########################################################################
 
@@ -94,7 +94,7 @@ if __name__=="__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description=
-                                     "post process f2fs_test script output")
+                                     "post process fs_test script output")
     parser.add_argument("-f", "--fibmap", required=True,
                         help="the fibmap file")
     parser.add_argument("-b", "--blktrace", required=True,
