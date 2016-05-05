@@ -31,12 +31,11 @@ RUN_FIO=TRUE
 
 DEVICE=/dev/nvme0n1
 FS=ext4
-MNT=/mnt/${FS}
-FILENAME=${MNT}/tst
 FIOEXE=fio
 COUNT=1k
 SIZE=100
 FSYNC=100
+FORMAT_ARGS=
 
 set +e; rm *.out; set -e
 DATESTR=$(date +%S%M%H%d%m%y)
@@ -72,11 +71,20 @@ while getopts "x:d:f:F:s:c:y:tz" opt; do
 	    ;;
     esac
 done
+MNT=/mnt/${FS}
+FILENAME=${MNT}/tst
+
+if [ "$FS" = "btrfs" ]; then
+    FORMAT_ARGS="-f"
+fi
+if [ "$FS" = "ext4" ]; then
+    FORMAT_ARGS="-F"
+fi
 
 set +e ; umount $DEVICE ; set -e
 if [ "$FORMAT" = TRUE ]; then
     echo "Formatting..."
-    mkfs.$FS $DEVICE
+    mkfs.$FS ${FORMAT_ARGS} $DEVICE
 fi
 
   # N.B The odd -o call for blktrace is to accomodate when blktrace is
