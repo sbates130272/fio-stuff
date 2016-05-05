@@ -2,7 +2,7 @@
 # Test script for the io-poll additions to the block layer.
 
 DEVICE=nvme0n1
-DEST=/tmp/batesste
+DEST=/mnt/iopoll-test
 
 IOPOLLEN=1
 IOPOLLFILE=/sys/block/${DEVICE}/queue/io_poll
