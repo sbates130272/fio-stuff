@@ -123,4 +123,4 @@ fi
 
   # Tar up the output .out files and timestamp them
 
-tar cvzf fs-test.${FS}.${DATESTR}.tar.bz2 *.out
+tar cvjf fs-test.${FS}.${DATESTR}.tar.bz2 *.out
