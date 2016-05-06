@@ -67,7 +67,7 @@ def filefrag(inp_file):
         else:
             extent, off_s, off_f, lba_s, lba_f, length, exp = tmp
 
-        output_line(off_s*int(hdr["blocksize"]), lba_s, length)
+        output_line(off_s*int(hdr["blocksize"]), lba_s, length*int(hdr["blocksize"]))
 
 
 def blktrace(inp_file):
