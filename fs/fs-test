@@ -97,7 +97,7 @@ if [ "$RUN_DD" = TRUE ]; then
     BLKTRACE_PID=$!
     dd if=/dev/zero of=$FILENAME bs=4k count=${COUNT}
     sync; kill -15 $BLKTRACE_PID
-    hdparm --fibmap $FILENAME > fibmap.${FS}.dd
+    filefrag -sve  $FILENAME > filefrag.${FS}.dd
 fi
 
 sleep 1
@@ -109,16 +109,16 @@ if [ "$RUN_FIO" = TRUE ]; then
     $FIOEXE --name=fs-test --filename $FILENAME --rw=randwrite \
 	    --size=$SIZE --iodepth=1 --ioengine=sync --numjobs=1 --fsync=$FSYNC
     sync; kill -15 $BLKTRACE_PID
-    hdparm --fibmap $FILENAME > fibmap.${FS}.fio
+    filefrag -sve  $FILENAME > filefrag.${FS}.fio
 fi
 
   # Run the post-processing...
 
 if [ "$RUN_DD" = TRUE ]; then
-    ./fs-test.py -f fibmap.${FS}.dd -b blktrace.${FS}.dd
+    ./fs-test.py -f filefrag.${FS}.dd -b blktrace.${FS}.dd
 fi
 if [ "$RUN_FIO" = TRUE ]; then
-    ./fs-test.py -f fibmap.${FS}.fio -b blktrace.${FS}.fio
+    ./fs-test.py -f filefrag.${FS}.fio -b blktrace.${FS}.fio
 fi
 
   # Tar up the output .out files and timestamp them
