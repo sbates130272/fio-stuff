@@ -39,9 +39,10 @@ RW_MIX_READ=100
 RUNTIME=10
 FIOEXE=fio
 COUNT=100000
+HIPRI=0
 
   # Accept some key parameter changes from the command line.
-while getopts "x:t:b:r:n:f:i:s:e:c:" opt; do
+while getopts "x:t:b:r:n:f:i:s:e:c:p" opt; do
     case "$opt" in
 	x)  FIOEXE=${OPTARG}
             ;;
@@ -62,6 +63,9 @@ while getopts "x:t:b:r:n:f:i:s:e:c:" opt; do
 	e)  IOENGINE=${OPTARG}
             ;;
 	c)  COUNT=${OPTARG}
+            ;;
+	p)  HIPRI=1
+	    IOENGINE=pvsync2
             ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -99,7 +103,7 @@ fi
 rm *.log
 FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
     BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
-    RUNTIME=${RUNTIME} LAT_LOG=${LAT_LOG} IOENGINE=${IOENGINE} \
+    RUNTIME=${RUNTIME} LAT_LOG=${LAT_LOG} IOENGINE=${IOENGINE} HIPRI=${HIPRI}\
     ${FIOEXE} ./fio-scripts/latency.fio
 cleanup
 ./pp-scripts/pprocess.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
