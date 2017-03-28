@@ -31,6 +31,7 @@ suffixmap = {
     'n' : 1e-9   ,
     'u' : 1e-6   ,
     'm' : 1e-3   ,
+    ' ' : 1      ,
     'k' : 1e3    ,
     'K' : 1e3    ,
     'M' : 1e6    ,
@@ -50,6 +51,7 @@ def suffix(szVal):
             break
     number = szVal[:i]
     unit = szVal[i:].lstrip()
+    unit = unit.strip("B") or " "
 
     try:
         return float(number)*suffixmap[unit[0]]
@@ -151,14 +153,15 @@ def parse_bs(szFile):
             threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[2])
         if ", bs=" in line:
             tmp = line.split(',')[1].split('-')[0][4:].strip()
+            tmp = tmp.replace("(R)", "").strip()
             try:
                 bss.append(float(tmp))
             except:
                 bss.append(suffix(tmp))
         if re.match("^READ", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for iod in bss:
