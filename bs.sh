@@ -24,66 +24,15 @@
 ##
 ########################################################################
 
-  # Parameters for running FIO
-FILENAME=/dev/nvme0n1
-IOENGINE=libaio
-SIZE=16G
-NUM_JOBS=1
-IODEPTH=16
-RW_MIX_READ=100
-RUNTIME=10
-FIOEXE=fio
+DIR=$(dirname "$0")
+source $DIR/common.sh
 
-  # Accept some key parameter changes from the command line.
-while getopts "x:t:d:r:n:f:i:s:e:" opt; do
-    case "$opt" in
-	x)  FIOEXE=${OPTARG}
-            ;;
-	t)  RUNTIME=${OPTARG}
-            ;;
-	d)  IODEPTH=${OPTARG}
-            ;;
-	r)  RW_MIX_READ=${OPTARG}
-            ;;
-	f)  FILENAME=${OPTARG}
-            ;;
-	n)  NUM_JOBS=${OPTARG}
-            ;;
-	s)  SIZE=${OPTARG}
-            ;;
-	e)  IOENGINE=${OPTARG}
-            ;;
-	\?)
-	    echo "Invalid option: -$OPTARG" >&2
-	    exit 1
-	    ;;
-	:)
-	    echo "Option -$OPTARG requires an argument." >&2
-	    exit 1
-	    ;;
-    esac
+export IODEPTH=16
+
+while getopts "${COMMON_OPTS}" opt; do
+	parse_common_opt $opt $OPTARG && continue
 done
 
-if [ ! -e "$FILENAME" ]; then
-     echo "bs.sh: You must specify an existing file or block IO device"
-     exit 1
-fi
-if [ ! -b "$FILENAME" ]; then
-    if [ ! -f "$FILENAME" ]; then
-	echo "bs.sh: Only block devices or regular files are permitted"
-	exit 1
-    fi
-    if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
-	echo "bs.sh: Do not have read and write access to the target file"
-	exit 1
-    fi
-fi
+run
 
-./tools/cpuperf.py -C fio -s -m > bs.cpu.log &
-CPUPERF_PID=$! ; trap 'kill -9 $CPUPERF_PID' EXIT
-
-FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} \
-    IODEPTH=${IODEPTH} RW_MIX_READ=${RW_MIX_READ} \
-    IOENGINE=${IOENGINE} RUNTIME=${RUNTIME} \
-    ${FIOEXE} ./fio-scripts/bs.fio | tee bs.log
-./pp-scripts/pprocess.py -m bs -c bs.log
+post

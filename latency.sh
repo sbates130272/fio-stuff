@@ -23,87 +23,32 @@
 ##
 ########################################################################
 
-  # Parameters for post-processing
+DIR=$(dirname "$0")
+source $DIR/common.sh
+
 BINS=100
 SKIP=10000
 CROP=10000
 
-  # Parameters for running FIO
-FILENAME=/dev/nvme0n1
-IOENGINE=libaio
-NUM_JOBS=1
-SIZE=1G
-IO_DEPTH=1
-BLOCK_SIZE=512
-RW_MIX_READ=100
-RUNTIME=10
-FIOEXE=fio
-COUNT=100000
-HIPRI=0
+export COUNT=100000
 
-  # Accept some key parameter changes from the command line.
-while getopts "x:t:b:r:n:f:i:s:e:c:p" opt; do
-    case "$opt" in
-	x)  FIOEXE=${OPTARG}
-            ;;
-	t)  RUNTIME=${OPTARG}
-            ;;
-	b)  BLOCK_SIZE=${OPTARG}
-            ;;
-	r)  RW_MIX_READ=${OPTARG}
-            ;;
-	n)  NUM_JOBS=${OPTARG}
-            ;;
-	f)  FILENAME=${OPTARG}
-            ;;
-	i)  IO_DEPTH=${OPTARG}
-            ;;
-	s)  SIZE=${OPTARG}
-            ;;
-	e)  IOENGINE=${OPTARG}
-            ;;
-	c)  COUNT=${OPTARG}
-            ;;
-	p)  HIPRI=1
-	    IOENGINE=pvsync2
-            ;;
-	\?)
-	    echo "Invalid option: -$OPTARG" >&2
-	    exit 1
-	    ;;
-	:)
-	    echo "Option -$OPTARG requires an argument." >&2
-	    exit 1
-	    ;;
-    esac
+while getopts "${COMMON_OPTS}c:p" opt; do
+	parse_common_opt $opt $OPTARG && continue
+
+	case "$opt" in
+		c)  export COUNT=${OPTARG} ;;
+		p)  export FIOOPTS="--ioengine=pvsync2 --hipri"
+		    export IOENGINE=pvsync2
+		    ;;
+	esac
 done
-LAT_LOG=$(basename ${FILENAME})
-COUNT=$((${COUNT} + ${SKIP} + ${CROP}))
 
-function cleanup {
-    rm -f *_slat.*.log *_clat.*.log > /dev/null
-    mv ${LAT_LOG}_lat.1.log ${LAT_LOG}.log
-}
+export LAT_LOG=$(basename ${FILENAME})
+export COUNT=$((${COUNT} + ${SKIP} + ${CROP}))
 
-if [ ! -e "$FILENAME" ]; then
-     echo "latency.sh: You must specify an existing file or block IO device"
-     exit 1
-fi
-if [ ! -b "$FILENAME" ]; then
-    if [ ! -f "$FILENAME" ]; then
-	echo "latency.sh: Only block devices or regular files are permitted"
-	exit 1
-    fi
-    if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
-	echo "latency.sh: Do not have read and write access to the target file"
-	exit 1
-    fi
-fi
+run
 
-rm *.log
-FILENAME=${FILENAME} SIZE=${SIZE} NUM_JOBS=${NUM_JOBS} IO_DEPTH=${IO_DEPTH} \
-    BLOCK_SIZE=${BLOCK_SIZE} COUNT=${COUNT} RW_MIX_READ=${RW_MIX_READ} \
-    RUNTIME=${RUNTIME} LAT_LOG=${LAT_LOG} IOENGINE=${IOENGINE} HIPRI=${HIPRI}\
-    ${FIOEXE} ./fio-scripts/latency.fio
-cleanup
-./pp-scripts/pprocess.py -k ${CROP} -s ${SKIP} -b ${BINS} -c ${LAT_LOG}.log
+rm -f *_slat.*.log *_clat.*.log > /dev/null
+mv ${LAT_LOG}_lat.1.log ${SCRIPT}.log
+
+post -k ${CROP} -s ${SKIP} -b ${BINS}
