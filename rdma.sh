@@ -23,6 +23,9 @@
 ##
 ########################################################################
 
+DIR=$(dirname "$0")
+source $DIR/common.sh
+
 MODE=server
 PORT=12345
 HOSTNAME=donard-rdma
