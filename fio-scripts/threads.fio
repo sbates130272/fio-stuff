@@ -34,6 +34,7 @@ iodepth=${IO_DEPTH}
 bs=${BLOCK_SIZE}
 size=${SIZE}
 rwmixread=${RW_MIX_READ}
+thread
 
 [threads_1]
 numjobs=1

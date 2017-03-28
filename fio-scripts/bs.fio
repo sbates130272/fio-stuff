@@ -34,6 +34,7 @@ iodepth=${IODEPTH}
 numjobs=${NUM_JOBS}
 size=${SIZE}
 rwmixread=${RW_MIX_READ}
+thread
 
 [bs_512]
 bs=512

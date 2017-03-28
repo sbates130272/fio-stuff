@@ -37,3 +37,4 @@ size=${SIZE}
 number_ios=${COUNT}
 write_lat_log=${LAT_LOG}
 rwmixread=${RW_MIX_READ}
+thread
