@@ -123,9 +123,9 @@ def parse_iod(szFile):
         if "iodepth=" in line:
            iodepth.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for iod in iodepth:
