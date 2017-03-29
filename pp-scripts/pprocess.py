@@ -121,7 +121,7 @@ def parse_iod(szFile):
         if "jobs=" in line:
             threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[2])
         if "iodepth=" in line:
-           iodepth.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
+            iodepth.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
             readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
@@ -361,14 +361,14 @@ def iodepth(options, args):
     dtLabels['xlabel'] = "IO Depth"
     dtLabels['ylabel'] = "Bandwidth"
     plotxy(x, y2, dtLabels, szFile='iodepth.bw.png')
-    try:
-        dtLabels=dict()
-        dtLabels['title']  = "IO Depth vs Bandwidth Efficiency"
-        dtLabels['xlabel'] = "IO Depth"
-        dtLabels['ylabel'] = "Bandwidth per HW Thread"
-        plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='iodepth.cpubw.png')
-    except:
-        print "WARNING: Issue generating'iodepth.cpubw.png' skipping."
+
+    dtLabels=dict()
+    dtLabels['title']  = "IO Depth vs Bandwidth Efficiency"
+    dtLabels['xlabel'] = "IO Depth"
+    dtLabels['ylabel'] = "Bandwidth per HW Thread"
+    plotxy(x, [100*float(a)/b if b != 0 else float('inf') for a,b in zip(y2,y1) ],
+           dtLabels, szFile='iodepth.cpubw.png')
+
     x,y = parse_cpu('iodepth.cpu.log')
     dtLabels['title']  = "CPU Utilization vs time"
     dtLabels['xlabel'] = "time (sec)"
