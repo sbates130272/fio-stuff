@@ -24,7 +24,7 @@
 ##
 ########################################################################
 
-DIR=$(dirname "$0")
+DIR=$(realpath $(dirname "$0"))
 source $DIR/common.sh
 
 #IO_DEPTH option is not used in this script

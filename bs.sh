@@ -24,7 +24,7 @@
 ##
 ########################################################################
 
-DIR=$(dirname "$0")
+DIR=$(realpath $(dirname "$0"))
 source $DIR/common.sh
 
 export IODEPTH=16
