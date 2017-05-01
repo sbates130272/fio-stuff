@@ -46,11 +46,11 @@ fi
   # zero. Note we use EXT4 and a fixed file size for testing. We
   # check to see if the drive is mounted and if so we unmount.
 
-if [[ $FILE_EN -eq 0 ]]; then
+if grep -qs ${MOUNT} /proc/mounts; then
+    umount /dev/${DEVICE}
+fi
+if [ "$FILE_EN" -ne "0" ]; then
     DEST=${MOUNT}/${TEST_FILE}
-    if grep -qs ${MOUNT} /proc/mounts; then
-	umount /dev/${DEVICE}
-    fi
     mkfs.ext4 -F /dev/${DEVICE}
     mkdir -p ${MOUNT}
     mount -t ext4 /dev/${DEVICE} ${MOUNT}
