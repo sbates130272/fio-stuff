@@ -37,6 +37,8 @@ if [ -e /sys/block/${DEVICE}/mq/0/io_poll ]; then
     BLKMQ_STATS_DIR=/sys/block/${DEVICE}/mq
 elif [ -e /sys/kernel/debug/block/${DEVICE}/mq/0/io_poll ]; then
     BLKMQ_STATS_DIR=/sys/kernel/debug/block/${DEVICE}/mq
+elif [ -e /sys/kernel/debug/block/${DEVICE}/hctx0/io_poll ]; then
+    BLKMQ_STATS_DIR=/sys/kernel/debug/block/${DEVICE}/hctx
 else
     echo "Could not determine IO polling stats location!"
     exit 1
@@ -87,24 +89,33 @@ echo ${IOPOLL_EN} > ${IOPOLL_FILE}
 if [ -e "$IOPOLL_MODE_FILE" ]
 then
     echo ${IOPOLL_MODE} > ${IOPOLL_MODE_FILE}
+else
+    echo "Error, could not locate $IOPOLL_MODE_FILE"
+    exit -1
 fi
 
   # Newer kernels allow us to reset the iopoll counters in each
   # run. We test to see if the stats files are writeable then we can
   # zero the stats.
 
-for DIR in ${BLKMQ_STATS_DIR}/*
+for DIR in ${BLKMQ_STATS_DIR}*
 do
-    if [ -w "${DIR}/io_poll" ]
+    if [ -e "${DIR}/io_poll" ]
     then
-	echo 0 > ${DIR}/io_poll
+	if [ -w "${DIR}/io_poll" ]
+	then
+	    echo 0 > ${DIR}/io_poll
+	fi
+    else
+	echo "Error, could not locate ${DIR}/io_poll"
+	exit -1
     fi
 done
 
 touch temp.fio
 set +e
 fio --filename=${DEST} --size=100% --numjobs=${NUMJOBS} --iodepth=1 \
-    --bs=4k --number_ios=100M --runtime=60 --ioengine=pvsync2 --hipri=1 \
+    --bs=512 --number_ios=100M --runtime=6 --ioengine=pvsync2 --hipri=1 \
     --rw=randrw --random_generator=lfsr --direct=1 --group_reporting=1 \
     --rwmixread=100 --loops=1 --name temp.fio
 set -e
@@ -122,12 +133,12 @@ then
 fi
 echo ${SCHED_FILE}
 cat ${SCHED_FILE}
-if [ -e ${BLKMQ_STATS_DIR}/poll_stat ]; then
-    echo ${BLKMQ_STATS_DIR}/poll_stat
-    cat ${BLKMQ_STATS_DIR}/poll_stat
+if [ -e ${BLKMQ_STATS_DIR}*/poll_stat ]; then
+    echo ${BLKMQ_STATS_DIR}*/poll_stat
+    cat ${BLKMQ_STATS_DIR}*/poll_stat
 fi
 queue=0
-for DIR in ${BLKMQ_STATS_DIR}/[0-9]*
+for DIR in ${BLKMQ_STATS_DIR}*
 do
     echo "Results for queue $queue..."
     cat ${DIR}/io_poll
