@@ -98,13 +98,23 @@ fi
   # run. We test to see if the stats files are writeable then we can
   # zero the stats.
 
+bfirst=1;
 for DIR in ${BLKMQ_STATS_DIR}*
 do
     if [ -e "${DIR}/io_poll" ]
     then
 	if [ -w "${DIR}/io_poll" ]
 	then
+	    if (($bfirst == 1)); then
+		echo "zeroing io_poll counters..."
+		bfirst=0;
+	    fi
 	    echo 0 > ${DIR}/io_poll
+	else
+	    if (($bfirst ==1)); then
+		echo "Cannot zero io_poll counters..."
+		bfirst = 0;
+	    fi
 	fi
     else
 	echo "Error, could not locate ${DIR}/io_poll"
