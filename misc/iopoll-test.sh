@@ -35,10 +35,13 @@ TEST_FILE=test.data
 
 if [ -e /sys/block/${DEVICE}/mq/0/io_poll ]; then
     BLKMQ_STATS_DIR=/sys/block/${DEVICE}/mq
+    BLKMQ_PSTATS_DIR=/sys/block/${DEVICE}/mq
 elif [ -e /sys/kernel/debug/block/${DEVICE}/mq/0/io_poll ]; then
     BLKMQ_STATS_DIR=/sys/kernel/debug/block/${DEVICE}/mq
+    BLKMQ_PSTATS_DIR=/sys/kernel/debug/block/${DEVICE}/mq
 elif [ -e /sys/kernel/debug/block/${DEVICE}/hctx0/io_poll ]; then
     BLKMQ_STATS_DIR=/sys/kernel/debug/block/${DEVICE}/hctx
+    BLKMQ_PSTATS_DIR=/sys/kernel/debug/block/${DEVICE}
 else
     echo "Could not determine IO polling stats location!"
     exit 1
@@ -143,11 +146,12 @@ then
 fi
 echo ${SCHED_FILE}
 cat ${SCHED_FILE}
-if [ -e ${BLKMQ_STATS_DIR}*/poll_stat ]; then
-    echo ${BLKMQ_STATS_DIR}*/poll_stat
-    cat ${BLKMQ_STATS_DIR}*/poll_stat
+if [ -e ${BLKMQ_PSTATS_DIR}/poll_stat ]; then
+    echo ${BLKMQ_PSTATS_DIR}/poll_stat
+    cat ${BLKMQ_PSTATS_DIR}/poll_stat
 fi
 queue=0
+set +e
 for DIR in ${BLKMQ_STATS_DIR}*
 do
     echo "Results for queue $queue..."
@@ -155,6 +159,6 @@ do
     queue=$((queue+ 1))
 done
 if [ -e /sys/kernel/debug/block/${DEVICE}/state ]; then
-    echo /sys/kernel/debug/block/nvme1n1/state
+    echo /sys/kernel/debug/block/${DEVICE}/state
     cat /sys/kernel/debug/block/${DEVICE}/state
 fi
