@@ -6,7 +6,7 @@
 # 2. numjobs (positive), default 1.
 # 3. Use FILE on FS (1) or use raw block device (0).
 # 4. io_poll value (0 or 1), default 1.
-# 5. io_poll_delay (integer (0=>always, 1=>hybrid,>1=>delay before
+# 5. io_poll_delay (integer (-1=>always, 0=>hybrid,>0=>delay before
 #    polling), default -1. Note some early kernels do not use this
 #    value. 
 #
@@ -25,6 +25,7 @@ NUMJOBS=${2:-1}
 FILE_EN=${3:-0}
 IOPOLL_EN=${4:-1}
 IOPOLL_MODE=${5:--1}
+HIPRI=${6:-100}
 
 IOPOLL_FILE=/sys/block/${DEVICE}/queue/io_poll
 IOPOLL_MODE_FILE=/sys/block/${DEVICE}/queue/io_poll_delay
@@ -32,6 +33,19 @@ SCHED_FILE=/sys/block/${DEVICE}/queue/scheduler
 
 MOUNT=/mnt/iopoll-test
 TEST_FILE=test.data
+
+print_queue()
+{
+    if [ -f $2 ]; then
+	result=`grep -i "=0" $2 | wc -l`
+    fi
+    if [[ "$result" -ne 3 ]]; then
+	echo "Results for queue $1..."
+	cat $2
+    else
+	echo "Skipped results for queue $1..."
+    fi
+}
 
 if [ -e /sys/block/${DEVICE}/mq/0/io_poll ]; then
     BLKMQ_STATS_DIR=/sys/block/${DEVICE}/mq
@@ -128,7 +142,7 @@ done
 touch temp.fio
 set +e
 fio --filename=${DEST} --size=100% --numjobs=${NUMJOBS} --iodepth=1 \
-    --bs=512 --number_ios=100M --runtime=6 --ioengine=pvsync2 --hipri=1 \
+    --bs=512 --number_ios=100M --runtime=6 --ioengine=pvsync2 --hipri=$HIPRI \
     --rw=randrw --random_generator=lfsr --direct=1 --group_reporting=1 \
     --rwmixread=100 --loops=1 --name temp.fio
 set -e
@@ -136,7 +150,7 @@ rm -f temp.fio
 
   # Report on each of the queues...
 
-echo "Results:"
+echo "Results (--highpri=${HIPRI}):"
 echo ${IOPOLL_FILE}
 cat ${IOPOLL_FILE}
 if [ -e "$IOPOLL_MODE_FILE" ]
@@ -154,8 +168,7 @@ queue=0
 set +e
 for DIR in ${BLKMQ_STATS_DIR}*
 do
-    echo "Results for queue $queue..."
-    cat ${DIR}/io_poll
+    print_queue $queue ${DIR}/io_poll
     queue=$((queue+ 1))
 done
 if [ -e /sys/kernel/debug/block/${DEVICE}/state ]; then
