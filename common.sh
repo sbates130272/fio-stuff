@@ -13,7 +13,7 @@ export IO_DEPTH=1
 export NUM_JOBS=1
 export RW_MIX_READ=100
 export SIZE=100%
-export RUNTIME=10
+export RUNTIME=180
 export FIOEXE=fio
 
 function parse_common_opt {
