@@ -27,9 +27,11 @@ DIR=$(realpath $(dirname "$0"))
 source $DIR/common.sh
 
 MODE=server
-PORT=12345
-HOSTNAME=donard-rdma
-VERB=read
+FILENAME=
+
+export PORT=12345
+export HOSTNAME=donard-rdma
+export VERB=read
 
 while getopts "${COMMON_OPTS}p:h:v:c" opt; do
 	parse_common_opt $opt $OPTARG && continue
@@ -39,14 +41,12 @@ while getopts "${COMMON_OPTS}p:h:v:c" opt; do
 		h)  export HOSTNAME=${OPTARG} ;;
 		v)  export VERB=${OPTARG} ;;
 	        c)  MODE=client ;;
-            ;;
 	esac
 done
 
 if [ "${MODE}" == "server" ]; then
 	if [ ! -z "$FILENAME" ]; then
-		check_filename
-		export FIOOPTS="--iomem mmap:${FILENAME}"
+		export FIOOPTS="--mem mmapshared:${FILENAME}"
        fi
 fi
 
