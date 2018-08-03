@@ -45,7 +45,6 @@ function parse_common_opt {
 function check_filenames {
     IFS=":"
     for entry in ${FILENAME}; do
-	echo $entry
 	check_filename $entry
     done
     IFS=" "

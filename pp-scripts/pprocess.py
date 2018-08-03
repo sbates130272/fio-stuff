@@ -94,7 +94,7 @@ def parse_thr(szFile):
         if re.match("^READ", line.strip()):
             readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            writebw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for thread in threads:
@@ -123,9 +123,9 @@ def parse_iod(szFile):
         if "iodepth=" in line:
             iodepth.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
-            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
+            writebw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for iod in iodepth:
@@ -159,9 +159,9 @@ def parse_bs(szFile):
             except:
                 bss.append(suffix(tmp))
         if re.match("^READ", line.strip()):
-            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            readbw.append(suffix(((line.split(',')[0]).split('=')[1]).strip()))
+            writebw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for iod in bss:
@@ -321,6 +321,24 @@ def latency(options, args):
     plotxy(None, data[0], dtLabels, options.ofile+".time.png")
     plotxdf(pnBins, pnHist, dtLabels, options.ofile+".cdf.png", options.cdf)
 
+def vadd(a, b):
+    "A safe vector add when lengths may mismatch or one input may be None"
+
+    ret =[]
+    if a==None:
+        ret = b
+    elif b==None:
+        ret = a
+    elif len(a)<len(b):
+        ret = b
+    elif len(b)<len(a):
+        ret = a
+    else:
+        for i in xrange(len(a)):
+            ret.append(a[i]+b[i])
+
+    return ret
+
 def threads(options, args):
 
     x,y1,y2,y3 = parse_thr(args[0])
@@ -333,13 +351,13 @@ def threads(options, args):
     dtLabels['title']  = "Threads vs Bandwidth"
     dtLabels['xlabel'] = "FIO threads"
     dtLabels['ylabel'] = "Bandwidth"
-    plotxy(x, y2, dtLabels, szFile='threads.bw.png')
+    plotxy(x, vadd(y2, y3), dtLabels, szFile='threads.bw.png')
     try:
         dtLabels=dict()
         dtLabels['title']  = "Threads vs Bandwidth Efficiency"
         dtLabels['xlabel'] = "FIO threads"
         dtLabels['ylabel'] = "Bandwidth per HW Thread"
-        plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='threads.cpubw.png')
+        plotxy(x, [100*float(a)/b for a,b in zip(vadd(y2, y3),y1)], dtLabels, szFile='threads.cpubw.png')
     except:
         print "WARNING: Issue generating'threads.cpubw.png' skipping."
     x,y = parse_cpu('threads.cpu.log')
@@ -360,13 +378,12 @@ def iodepth(options, args):
     dtLabels['title']  = "IO Depth vs Bandwidth"
     dtLabels['xlabel'] = "IO Depth"
     dtLabels['ylabel'] = "Bandwidth"
-    plotxy(x, y2, dtLabels, szFile='iodepth.bw.png')
-
+    plotxy(x, vadd(y2, y3), dtLabels, szFile='iodepth.bw.png')
     dtLabels=dict()
     dtLabels['title']  = "IO Depth vs Bandwidth Efficiency"
     dtLabels['xlabel'] = "IO Depth"
     dtLabels['ylabel'] = "Bandwidth per HW Thread"
-    plotxy(x, [100*float(a)/b if b != 0 else float('inf') for a,b in zip(y2,y1) ],
+    plotxy(x, [100*float(a)/b if b != 0 else float('inf') for a,b in zip(vadd(y2, y3),y1) ],
            dtLabels, szFile='iodepth.cpubw.png')
 
     x,y = parse_cpu('iodepth.cpu.log')
@@ -387,13 +404,13 @@ def bs(options, args):
     dtLabels['title']  = "Block Size vs Bandwidth"
     dtLabels['xlabel'] = "Block Size"
     dtLabels['ylabel'] = "Bandwidth"
-    plotxy(x, y2, dtLabels, szFile='bs.bw.png', logscale=True)
+    plotxy(x, vadd(y2, y3), dtLabels, szFile='bs.bw.png', logscale=True)
     try:
         dtLabels=dict()
         dtLabels['title']  = "Block Size vs Bandwidth Efficiency"
         dtLabels['xlabel'] = "Block Size"
         dtLabels['ylabel'] = "Bandwidth per HW Thread"
-        plotxy(x, [100*float(a)/b for a,b in zip(y2,y1)], dtLabels, szFile='bs.cpubw.png', logscale=True)
+        plotxy(x, [100*float(a)/b for a,b in zip(vadd(y2, y3),y1)], dtLabels, szFile='bs.cpubw.png', logscale=True)
     except:
         print "WARNING: Issue generating'bs.cpubw.png' skipping."
     x,y = parse_cpu('bs.cpu.log')
