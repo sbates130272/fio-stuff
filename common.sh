@@ -78,7 +78,8 @@ function run {
 	${DIR}/tools/cpuperf.py -C fio -s -m > ${SCRIPT}.cpu.log &
 	CPUPERF_PID=$! ; trap 'kill -9 $CPUPERF_PID' EXIT
 
-	${FIOEXE} ${DIR}/fio-scripts/$SCRIPT.fio ${FIOOPTS} | tee ${SCRIPT}.log
+	${FIOEXE} ${DIR}/fio-scripts/$SCRIPT.fio ${FIOOPTS} --output=${SCRIPT}.log \
+		  --output-format=normal
 
 	cd - > /dev/null
 }
