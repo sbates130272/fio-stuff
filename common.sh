@@ -42,19 +42,28 @@ function parse_common_opt {
 	return 0
 }
 
+function check_filenames {
+    IFS=":"
+    for entry in ${FILENAME}; do
+	echo $entry
+	check_filename $entry
+    done
+    IFS=" "
+}
+
 function check_filename {
-	if [ ! -e "$FILENAME" ]; then
-		echo "$SCRIPT: You must specify an existing file or block IO device"
+	if [ ! -e "$1" ]; then
+		echo "$SCRIPT: You must specify an existing file or block IO device (${1})"
 		exit 1
 	fi
 
-	if [ ! -b "$FILENAME" ]; then
-		if [ ! -f "$FILENAME" ]; then
+	if [ ! -b "$1" ]; then
+		if [ ! -f "$1" ]; then
 			echo "$SCRIPT: Only block devices or regular files are permitted"
 			exit 1
 		fi
 
-		if [ ! -r "$FILENAME" ] && [ ! -w "$FILENAME" ]; then
+		if [ ! -r "$1" ] && [ ! -w "$1" ]; then
 			echo "$SCRIPT: Do not have read and write access to the target file"
 			exit 1
 		fi
@@ -64,7 +73,7 @@ function check_filename {
 function run {
 	cd $OUTDIR
 
-	check_filename
+	check_filenames
 
 	${DIR}/tools/cpuperf.py -C fio -s -m > ${SCRIPT}.cpu.log &
 	CPUPERF_PID=$! ; trap 'kill -9 $CPUPERF_PID' EXIT
