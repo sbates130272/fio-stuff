@@ -27,6 +27,8 @@ import os
 import subprocess
 import re
 
+FIO_COL = 0 # This can be 0 or 1 depending on fio --version!
+
 suffixmap = {
     'n' : 1e-9   ,
     'u' : 1e-6   ,
@@ -92,9 +94,9 @@ def parse_thr(szFile):
         if "jobs=" in line:
             threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            writebw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            writebw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for thread in threads:
@@ -123,9 +125,9 @@ def parse_iod(szFile):
         if "iodepth=" in line:
             iodepth.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            writebw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            writebw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for iod in iodepth:
@@ -159,9 +161,9 @@ def parse_bs(szFile):
             except:
                 bss.append(suffix(tmp))
         if re.match("^READ", line.strip()):
-            readbw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            readbw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
-            writebw.append(suffix(((line.split(',')[1]).split('=')[1]).strip()))
+            writebw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
 
     cpu2 = []; i=0
     for iod in bss:
