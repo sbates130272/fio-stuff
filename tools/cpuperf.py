@@ -73,20 +73,20 @@ class HostData(object):
         return self.calc_cpu(total, self.start, self.start_time)
 
 if __name__=="__main__":
-    import optparse
+    import argparse
 
-    parser = optparse.OptionParser()
-    parser.add_option("-C", "--command", action="store", type="string",
-                      help="The command to look for in the ps log.", default=None)
-    parser.add_option("-t", "--time", action="store", type="int",
-                      help="Time to run for in seconds (-1 to run forever)", default=-1)
-    parser.add_option("-w", "--wait", action="store", type="int",
-                      help="Wait time in ms between calls to ps.", default=100)
-    parser.add_option("-s", "--skip", action="store_true",
-                      help="Only output data when command is running.")
-    parser.add_option("-m", "--multithread", action="store_true",
-                      help="Treat the process as a multi-threaded one when calling ps.")
-    (options, args) = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-C", "--command", action="store",
+                         help="The command to look for in the ps log.", default=None)
+    parser.add_argument("-t", "--time", action="store", type=int,
+                        help="Time to run for in seconds (-1 to run forever)", default=-1)
+    parser.add_argument("-w", "--wait", action="store", type=int,
+                        help="Wait time in ms between calls to ps.", default=100)
+    parser.add_argument("-s", "--skip", action="store_true",
+                        help="Only output data when command is running.")
+    parser.add_argument("-m", "--multithread", action="store_true",
+                        help="Treat the process as a multi-threaded one when calling ps.")
+    options = parser.parse_args()
 
     if not options.command:
         get_data = HostData()
@@ -108,4 +108,4 @@ if __name__=="__main__":
     except KeyboardInterrupt:
         print()
         if hasattr(get_data, "average"):
-            print("%-8s   %-3.1f" % (("Average", ) + get_data.average()))
+            print("%-8s   %-3.1f" % (("Average", get_data.average())))
