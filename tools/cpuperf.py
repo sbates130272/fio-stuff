@@ -3,11 +3,12 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import sys
 import subprocess as sp
 import time
 
-def get_perfdata(options):
+def get_ps_data(options):
     try:
         data = sp.check_output(["ps", "-C", options.command, "-o" "%cpu=,%mem="])
         if options.multithread:
@@ -23,13 +24,60 @@ def get_perfdata(options):
 
     return data
 
+class HostData(object):
+    def __init__(self):
+        self.last_total = None
+        self.last_time = None
+
+        self.clk_tck = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+
+        self.start = self.get_total_usage()
+        self.start_time = time.time()
+
+    def get_total_usage(self):
+        return sum(float(x) for x in
+                    open("/proc/stat").readline().split()[:3])
+
+    def calc_cpu(self, a, b, start_time):
+        duration = time.time() - start_time
+        return (a - b) / duration / self.clk_tck
+
+    def get_cpu(self):
+        usage = None
+        total = self.get_total_usage()
+
+        if self.last_total is not None:
+            usage = self.calc_cpu(total, self.last_total, self.last_time)
+
+        self.last_time = time.time()
+        self.last_total = total
+
+        return usage
+
+    def get_mem(self):
+        line = sp.check_output(["free"]).split("\n")[1]
+        total, used = (int(x) for x in line.split()[1:3])
+
+        return float(used) / float(total) * 100.
+
+    def __call__(self, *args):
+        cpu = self.get_cpu()
+
+        if cpu is None:
+            return
+
+        return cpu, self.get_mem()
+
+    def average(self):
+        total = self.get_total_usage()
+        return self.calc_cpu(total, self.start, self.start_time)
 
 if __name__=="__main__":
     import optparse
 
     parser = optparse.OptionParser()
     parser.add_option("-C", "--command", action="store", type="string",
-                      help="The command to look for in the ps log.", default="textswap")
+                      help="The command to look for in the ps log.", default=None)
     parser.add_option("-t", "--time", action="store", type="int",
                       help="Time to run for in seconds (-1 to run forever)", default=-1)
     parser.add_option("-w", "--wait", action="store", type="int",
@@ -40,17 +88,24 @@ if __name__=="__main__":
                       help="Treat the process as a multi-threaded one when calling ps.")
     (options, args) = parser.parse_args()
 
+    if not options.command:
+        get_data = HostData()
+    else:
+        get_data = get_ps_data
+
     try:
         start_time = time.time()
         end_time = start_time + options.time
         print("#%7s   %3s   %3s" % ("TIME", "CPU", "MEM"))
         while options.time < 0 or time.time() < end_time:
             t = time.time()-start_time
-            data = get_perfdata(options)
+            data = get_data(options)
             if data:
                 print("%8.1f   %-3.1f   %3.1f" % ((t,) + data))
                 sys.stdout.flush()
             time.sleep(options.wait / 1000.)
 
     except KeyboardInterrupt:
-        print
+        print()
+        if hasattr(get_data, "average"):
+            print("%-8s   %-3.1f" % (("Average", ) + get_data.average()))
