@@ -1,0 +1,14 @@
+[global]
+runtime=45
+time_based=1
+group_reporting=1
+ioengine=libaio
+
+[p2pmem-read]
+filename=/dev/nvme0n1
+iomem=mmapshared:/dev/p2pmem0
+readwrite=read
+bs=4m
+iodepth=16
+numjobs=8
+direct=1
