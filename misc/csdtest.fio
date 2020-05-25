@@ -1,0 +1,69 @@
+# csd-test.fio
+# (c) Stephen Bates, Eideticom, 2020
+#
+# A simple, stand-alone fio script for generic SSD/CSD testing. Assumes
+# you have run the following commands first:
+# mkfs.ext4 /dev/nvme0n1
+#   i. replace ext4 with filesystem of choice.
+#   ii. replace /dev/nvme0n1 with block device under test.
+#   iii. Use mdadm and /dev/mdX if using device-mapper RAID
+# mount /mnt/csdtest /dev/nvme0n1
+#   i. replace csdtest with vendor of SSD.
+#   ii. replace /dev/nvme0n1 with device under test.
+#
+# You can then use the --sections option of fio to run one or more of
+# the following sections. Note the use of multiple [global] sections
+# to keep code terse. Be careful with cut and paste. Also alway run
+# the sequential-write section on the first run so ensure that the
+# test file is on disk.
+
+[global]
+group_reporting=1
+ioengine=libaio
+direct=1
+filename=/mnt/csdtest/seqwrite.dat
+numjobs=1
+bs=128k
+iodepth=128
+
+[sequential-write]
+readwrite=write
+filesize=128G
+
+[global]
+time_based=1
+runtime=360
+
+[sequential-write-too]
+stonewall=1
+readwrite=write
+
+[sequential-read]
+stonewall=1
+readwrite=read
+
+[global]
+bs=8k
+iodepth=64
+
+[random-write]
+stonewall=1
+readwrite=randwrite
+
+[random-read]
+stonewall=1
+readwrite=randread
+
+[global]
+runtime=60
+ioengine=sync
+iodepth=1
+numjobs=1
+
+[qos-write]
+stonewall=1
+readwrite=randwrite
+
+[qos-read]
+stonewall=1
+readwrite=randread
