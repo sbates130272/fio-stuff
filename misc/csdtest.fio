@@ -42,6 +42,11 @@ readwrite=write
 stonewall=1
 readwrite=read
 
+[sequential-write-compress]
+stonewall=1
+readwrite=write
+buffer_compress_percentage=50
+
 [global]
 bs=8k
 iodepth=64
