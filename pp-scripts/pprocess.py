@@ -29,16 +29,18 @@ import re
 
 FIO_COL = 0 # This can be 0 or 1 depending on fio --version!
 
+# Uppercase units are for power-of-2 values and lowercase units are for power-of-10 values
+# See https://fio.readthedocs.io/en/latest/fio_doc.html#units
 suffixmap = {
     'n' : 1e-9   ,
     'u' : 1e-6   ,
     'm' : 1e-3   ,
     ' ' : 1      ,
     'k' : 1e3    ,
-    'K' : 1e3    ,
-    'M' : 1e6    ,
-    'G' : 1e9    ,
-    'T' : 1e12
+    'K' : 2**10  ,
+    'M' : 2**20  ,
+    'G' : 2**30  ,
+    'T' : 2**40
 }
 
 
@@ -245,7 +247,7 @@ def plotxdf(peX, peY, dtLabels=None, szFile='plotxdf.png', bCdf=False):
     proc.stdin.write('set xlabel \'time (us)\'\n')
     proc.stdin.write('set ylabel \'%s\'\n' % ("CDF" if bCdf else "PDF"))
     proc.stdin.write('set grid\n')
-    proc.stdin.write('plot \"%s" with lines\n' % TMP_FILE)
+    proc.stdin.write('plot \"%s" with linespoints\n' % TMP_FILE)
     proc.stdin.write('quit\n')
     proc.wait()
     os.remove(TMP_FILE)
@@ -285,7 +287,7 @@ def plotxy(peX, peY, dtLabels=None, szFile='plotxy.png', logscale=False):
     if logscale:
         proc.stdin.write('set logscale x\n')
     proc.stdin.write('set grid\n')
-    proc.stdin.write('plot \"%s" with lines\n' % TMP_FILE)
+    proc.stdin.write('plot \"%s" with linespoints\n' % TMP_FILE)
     proc.stdin.write('quit\n')
     proc.wait()
     os.remove(TMP_FILE)
@@ -352,7 +354,7 @@ def threads(options, args):
     dtLabels=dict()
     dtLabels['title']  = "Threads vs Bandwidth"
     dtLabels['xlabel'] = "FIO threads"
-    dtLabels['ylabel'] = "Bandwidth"
+    dtLabels['ylabel'] = "Bandwidth (Bytes/s)"
     plotxy(x, vadd(y2, y3), dtLabels, szFile='threads.bw.png')
     try:
         dtLabels=dict()
@@ -379,7 +381,7 @@ def iodepth(options, args):
     dtLabels=dict()
     dtLabels['title']  = "IO Depth vs Bandwidth"
     dtLabels['xlabel'] = "IO Depth"
-    dtLabels['ylabel'] = "Bandwidth"
+    dtLabels['ylabel'] = "Bandwidth (Bytes/s)"
     plotxy(x, vadd(y2, y3), dtLabels, szFile='iodepth.bw.png')
     dtLabels=dict()
     dtLabels['title']  = "IO Depth vs Bandwidth Efficiency"
@@ -405,7 +407,7 @@ def bs(options, args):
     dtLabels=dict()
     dtLabels['title']  = "Block Size vs Bandwidth"
     dtLabels['xlabel'] = "Block Size"
-    dtLabels['ylabel'] = "Bandwidth"
+    dtLabels['ylabel'] = "Bandwidth (Bytes/s)"
     plotxy(x, vadd(y2, y3), dtLabels, szFile='bs.bw.png', logscale=True)
     try:
         dtLabels=dict()
