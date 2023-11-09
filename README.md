@@ -25,7 +25,7 @@ from https://github.com/axboe/fio.
 
 To run the post-processing scripts you will need python and gnuplot. I
 have tested using fio 2.2.6, python 2.6.6 and gnuplot 4.2 but the code
-is generic enought that other versions should work. Send pull requests
+is generic enough that other versions should work. Send pull requests
 if you see issues.
 
 ## Directory Structure
