@@ -62,3 +62,7 @@ numjobs=32
 [threads_64]
 stonewall
 numjobs=64
+
+[threads_128]
+stonewall
+numjobs=128
