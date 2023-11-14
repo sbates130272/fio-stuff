@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ########################################################################
 ##
 ## Copyright 2015 PMC-Sierra, Inc.
@@ -21,9 +21,6 @@
 ##     A post-processor for the filesystem scripting stuff.
 ##
 ########################################################################
-
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import re
 import subprocess as sp
