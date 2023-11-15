@@ -49,6 +49,6 @@ export COUNT=$((${COUNT} + ${SKIP} + ${CROP}))
 run
 
 rm -f *_slat.*.log *_clat.*.log > /dev/null
-mv ${LAT_LOG}_lat.1.log ${SCRIPT}.log
+mv ${OUTDIR}/${LAT_LOG}_lat.1.log ${OUTDIR}/${SCRIPT}.log
 
 post -k ${CROP} -s ${SKIP} -b ${BINS}
