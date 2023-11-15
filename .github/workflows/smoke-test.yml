@@ -11,8 +11,8 @@ jobs:
     steps:
     - name: Check out code using action/checkout
       uses: actions/checkout@v4.1.1
-    - name: Install fio via the apt package manager
-      run: sudo apt update && sudo apt install -y fio
+    - name: Install packages via the apt package manager
+      run: sudo apt update && sudo apt install -y fio python2
     - name: Create a test file
       run: dd if=/dev/urandom of=${GITHUB_WORKSPACE}/test-file bs=1M count=128
     - name: Run fio-stuff tests against our test file
