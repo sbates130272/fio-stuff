@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 ########################################################################
 ##
 ## Copyright 2015 PMC-Sierra, Inc.
@@ -75,7 +75,7 @@ def parse_lat(szFile):
     for line in fFile:
         if line[0]=="#":
             continue
-        ret.append(list(map(int, line.strip().split(',')))[1])
+        ret.append(map(int, line.strip().split(','))[1])
 
     return ret
 
@@ -92,9 +92,9 @@ def parse_thr(szFile):
         if line[0]=="#":
             continue
         if re.match("^cpu", line.strip()):
-            cpu.append(list(map(float, re.findall("[-+]?\d+[\.]?\d*", line))))
+            cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
         if "jobs=" in line:
-            threads.append(list(map(int, re.findall("[-+]?\d+[\.]?\d*", line)))[0])
+            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
             readbw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
@@ -121,11 +121,11 @@ def parse_iod(szFile):
         if line[0]=="#":
             continue
         if re.match("^cpu", line.strip()):
-            cpu.append(list(map(float, re.findall("[-+]?\d+[\.]?\d*", line))))
+            cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
         if "jobs=" in line:
-            threads.append(list(map(int, re.findall("[-+]?\d+[\.]?\d*", line)))[2])
+            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[2])
         if "iodepth=" in line:
-            iodepth.append(list(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))[0])
+            iodepth.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line))[0])
         if re.match("^READ", line.strip()):
             readbw.append(suffix(((line.split(',')[FIO_COL]).split('=')[1]).strip()))
         if re.match("^WRITE", line.strip()):
@@ -152,9 +152,9 @@ def parse_bs(szFile):
         if line[0]=="#":
             continue
         if re.match("^cpu", line.strip()):
-            cpu.append(list(map(float, re.findall("[-+]?\d+[\.]?\d*", line))))
+            cpu.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
         if "jobs=" in line:
-            threads.append(list(map(int, re.findall("[-+]?\d+[\.]?\d*", line)))[2])
+            threads.append(map(int, re.findall("[-+]?\d+[\.]?\d*", line))[2])
         if ", bs=" in line:
             tmp = line.split(',')[1].split('-')[0][4:].strip()
             tmp = tmp.replace("(R)", "").strip()
@@ -185,10 +185,10 @@ def parse_cpu(szFile):
     for line in fFile:
         if line[0]=="#":
             continue
-        data.append(list(map(float, re.findall("[-+]?\d+[\.]?\d*", line))))
+        data.append(map(float, re.findall("[-+]?\d+[\.]?\d*", line)))
 
     time = []; cpu = []; i=0
-    for i in list(range(len(data))):
+    for i in xrange(len(data)):
         time.append(data[i][0])
         cpu.append(data[i][1])
 
@@ -205,18 +205,18 @@ def hist(pnData, nBins=100, bCdf=False):
     end   = max(pnData)
     step  = (end-start)/float(nBins)
 
-    pnBins = [start+(x*step) for x in list(range(nBins))]
+    pnBins = [start+(x*step) for x in range(nBins)]
 
     pnHist =nBins*[0]
     for x in pnData:
-        for i in list(range(nBins-1)):
+        for i in xrange(nBins-1):
             if x>pnBins[i] and x<=pnBins[i+1]:
                 pnHist[i] = pnHist[i]+1
 
     if bCdf:
-        for i in list(range(1,nBins)):
+        for i in xrange(1,nBins):
             pnHist[i] = pnHist[i]+pnHist[i-1]
-        for i in list(range(nBins)):
+        for i in xrange(nBins):
             pnHist[i] = pnHist[i]/float(pnHist[-1])
     return pnBins,pnHist
 
@@ -230,14 +230,13 @@ def plotxdf(peX, peY, dtLabels=None, szFile='plotxdf.png', bCdf=False):
     DEVNULL = open(os.devnull, 'wb')
 
     tmpFile = open(TMP_FILE,'w')
-    for i in range(len(peX)):
+    for i in xrange(len(peX)):
         tmpFile.write("%f\t%f\n" % (peX[i],peY[i]))
     tmpFile.close()
 
     proc = subprocess.Popen(['gnuplot','-p'], shell=True,
                             stdin=subprocess.PIPE,
-                            stdout=DEVNULL, stderr=DEVNULL,
-                            text=True)
+                            stdout=DEVNULL, stderr=DEVNULL)
     proc.stdin.write('set terminal png medium\n')
     proc.stdin.write('set output \"%s\"\n' % szFile)
     if dtLabels['title']:
@@ -260,20 +259,19 @@ def plotxy(peX, peY, dtLabels=None, szFile='plotxy.png', logscale=False):
     placing it on the gnuplot command line."""
 
     if peX==None:
-        peX = list(range(len(peY)))
+        peX = xrange(len(peY))
 
     TMP_FILE='plot.data'
     DEVNULL = open(os.devnull, 'wb')
 
     tmpFile = open(TMP_FILE,'w')
-    for i in list(range(len(peX))):
+    for i in xrange(len(peX)):
         tmpFile.write("%f\t%f\n" % (peX[i],peY[i]))
     tmpFile.close()
 
     proc = subprocess.Popen(['gnuplot','-p'], shell=True,
                             stdin=subprocess.PIPE,
-                            stdout=DEVNULL, stderr=DEVNULL,
-                            text=True)
+                            stdout=DEVNULL, stderr=DEVNULL)
     proc.stdin.write('set terminal png medium\n')
     proc.stdin.write('set output \"%s\"\n' % szFile)
     try:
@@ -303,7 +301,7 @@ def mean(peX):
 def latency(options, args):
 
     data = []
-    for i in list(range(len(args))):
+    for i in range(len(args)):
         data.append(parse_lat(args[i]))
 
     if len(data[0])<(options.skip+options.crop):
@@ -340,7 +338,7 @@ def vadd(a, b):
     elif len(b)<len(a):
         ret = a
     else:
-        for i in list(range(len(a))):
+        for i in xrange(len(a)):
             ret.append(a[i]+b[i])
 
     return ret
@@ -365,7 +363,7 @@ def threads(options, args):
         dtLabels['ylabel'] = "Bandwidth per HW Thread"
         plotxy(x, [100*float(a)/b for a,b in zip(vadd(y2, y3),y1)], dtLabels, szFile='threads.cpubw.png')
     except:
-        print("WARNING: Issue generating'threads.cpubw.png' skipping.")
+        print "WARNING: Issue generating'threads.cpubw.png' skipping."
     x,y = parse_cpu('threads.cpu.log')
     dtLabels['title']  = "CPU Utilization vs time"
     dtLabels['xlabel'] = "time (sec)"
@@ -418,7 +416,7 @@ def bs(options, args):
         dtLabels['ylabel'] = "Bandwidth per HW Thread"
         plotxy(x, [100*float(a)/b for a,b in zip(vadd(y2, y3),y1)], dtLabels, szFile='bs.cpubw.png', logscale=True)
     except:
-        print("WARNING: Issue generating'bs.cpubw.png' skipping.")
+        print "WARNING: Issue generating'bs.cpubw.png' skipping."
     x,y = parse_cpu('bs.cpu.log')
     dtLabels['title']  = "CPU Utilization vs time"
     dtLabels['xlabel'] = "time (sec)"
@@ -428,6 +426,10 @@ def bs(options, args):
 if __name__=="__main__":
     import sys
     import optparse
+    import shutil
+
+#    if shutil.which("gnuplot")is None:
+#        raise ValueError('gnuplot is not installed')
 
     parser = optparse.OptionParser()
     parser.add_option("-m", "--mode", action="store", type=str,
@@ -443,6 +445,9 @@ if __name__=="__main__":
     parser.add_option("-c", "--cdf", action="store_true",
                       help="generate CDF rather than PDF")
     options, args = parser.parse_args()
+
+    if len(args)==0:
+        raise ValueError('pprocess.py requires an input file')
 
     if len(args)>1:
         raise ValueError('pprocess.py only accepts one input file (for now)')
